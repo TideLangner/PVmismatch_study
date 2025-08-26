@@ -5,7 +5,7 @@
 from pvmismatch import pvsystem, pvstring
 from datasheets.module_specs import std_module, degraded_module
 
-def create_system(num_strings=30, num_modules=21, module_type='std'):
+def create_system(num_strings=12, num_modules=12, module_type='std'):
     """Create a PVsystem with given number of strings and modules per string."""
     if module_type == 'std':
         mod = std_module()

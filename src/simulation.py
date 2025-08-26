@@ -1,5 +1,6 @@
 # Tide Langner
-# 24 August 2025
+# 25 August 2025
+# Runs simulations of PV system
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,7 +31,7 @@ ex3 = pvsys.plotSys()
 
 # ---------- Example 4: Module removal ----------
 pvsys = create_system()
-pvsys_degraded = remove_modules(pvsys, n_missing=12, strings_with_missing=10)
+pvsys_degraded = remove_modules(pvsys, n_missing=3, strings_with_missing=8)
 module_eq_diff = (pvsys.Pmp - pvsys_degraded.Pmp) / (pvsys.Pmp/len(pvsys.numberMods))
 print("Module equivalent loss:", module_eq_diff)
 print("Pmp after module removal:", pvsys_degraded.Pmp)
@@ -44,6 +45,7 @@ module_eq_diff_list = []
 
 for num_strings in num_strings_list:
     sys = create_system(num_strings=num_strings)
+    # shade module 0 in string 0 to 90% irradiance
     shade_modules(sys, {0:{0:0.9}})
     diff = (sys.Pmp - create_system(num_strings=num_strings).Pmp)/(sys.Pmp/len(sys.numberMods))
     module_eq_diff_list.append(diff)

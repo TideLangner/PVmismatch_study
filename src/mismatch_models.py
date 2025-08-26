@@ -1,3 +1,7 @@
+# Tide Langner
+# 25 August 2025
+# Define mismatch models to be used in simulation.py
+
 from pvmismatch import pvsystem
 
 def shade_modules(pvsys, shading_dict):
