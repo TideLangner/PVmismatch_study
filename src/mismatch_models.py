@@ -26,3 +26,8 @@ def remove_modules(pvsys, n_missing=1, strings_with_missing=1):
     pvsys_degraded = pvsystem.PVsystem(pvstrs=pvstrs_degraded)
     pvsys_degraded.setTemps(50.0 + 273.15)
     return pvsys_degraded
+
+# TODO: add degradation model
+# TODO: add irradiance model
+# TODO: add temperature model
+# TODO: add combination model

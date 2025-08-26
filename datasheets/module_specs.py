@@ -2,26 +2,16 @@
 # 25 August 2025
 # Jinko JKM 290PP 72 module parameters - 6 columns x 12 rows
 
-from pvmismatch import *
-from pvmismatch.pvmismatch_lib.pvcell import PVcell
-from pvmismatch.pvmismatch_lib.pvmodule import PVmodule
-
 from pvmismatch import pvcell, pvmodule
 
-# Standard 72-cell module
+# Jinko JKM290PP-72 module with standard parameters from CEC module database
 def std_module():
-    cell = pvcell.PVcell()
+    cell = pvcell.PVcell(Rs=0.00641575, Rsh=285.79,
+                         Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
     return pvmodule.PVmodule(cell_pos=pvmodule.STD72, pvcells=[cell]*72)
 
 # Degraded module with low shunt resistance
 def degraded_module(Rsh=0.25):
-    cell = pvcell.PVcell(Rsh=Rsh)
+    cell = pvcell.PVcell(Rs=0.00641575, Rsh=Rsh,
+                         Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
     return pvmodule.PVmodule(cell_pos=pvmodule.STD72, pvcells=[cell]*72)
-
-"""
-# create custom module (Jinko JKM 290PP 72) --> needs attention
-Jinko_module = PVmodule(
-    cell_pos=pvmodule.STD72,
-    pvcells=[PVcell(Rs=0.00641575, Rsh=285.79) for _ in range(72)]  # Rs and Rsh found in CEC module database
-)
-"""
