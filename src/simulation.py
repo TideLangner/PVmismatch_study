@@ -4,9 +4,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pv_system import create_system
+from pv_system import create_system, create_Rsh_degraded_system
 from mismatch_models import shade_modules, remove_modules
+from pvmismatch import pvsystem
 
+"""
 # ---------- Example 1: Basic system ----------
 pvsys = create_system()
 print("Pmp:", pvsys.Pmp, " Vmp:", pvsys.Vmp, " Imp:", pvsys.Imp)
@@ -55,4 +57,40 @@ plt.plot(num_strings_list, module_eq_diff_list)
 plt.xlabel("Number of Strings")
 plt.ylabel("Module Equivalent Loss")
 plt.grid()
+# plt.show()
+"""
+
+# ---------- Example 6: Healthy vs Exponentially Degraded System ----------
+
+# Healthy system
+pvsys_healthy = create_system()
+
+# Exponentially degraded Rsh system
+pvsys_degraded = create_Rsh_degraded_system()
+
+# Prepare legend labels with Pmp info
+label_healthy = (f"Healthy: Vmp={pvsys_healthy.Vmp:.1f}V, "
+                 f"Imp={pvsys_healthy.Imp:.2f}A, Pmp={pvsys_healthy.Pmp:.1f}W")
+label_degraded = (f"Degraded: Vmp={pvsys_degraded.Vmp:.1f}V, "
+                  f"Imp={pvsys_degraded.Imp:.2f}A, Pmp={pvsys_degraded.Pmp:.1f}W")
+
+# Plot IV curves
+plt.figure(figsize=(10,6))
+plt.plot(pvsys_healthy.Vsys, pvsys_healthy.Isys, label="Healthy System", lw=2)
+plt.plot(pvsys_degraded.Vsys, pvsys_degraded.Isys, label="Degraded System", lw=2, ls="--")
+
+# Highlight Pmp points
+plt.plot(pvsys_healthy.Vmp, pvsys_healthy.Imp, 'o', color='blue', label=label_healthy)
+plt.plot(pvsys_degraded.Vmp, pvsys_degraded.Imp, 'o', color='red', label=label_degraded)
+
+plt.xlabel("Voltage [V]")
+plt.ylabel("Current [A]")
+plt.title("IV Curve: Healthy vs Exponentially Degraded System")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
 plt.show()
+
+# Optional: print Pmp values
+print("Healthy Pmp:", pvsys_healthy.Pmp)
+print("Degraded Pmp:", pvsys_degraded.Pmp)
