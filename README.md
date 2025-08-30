@@ -1,9 +1,9 @@
 # PV Mismatch Basic (PVMismatch)
 
-A project to model **electrical mismatch losses** in PV strings/arrays using the
+A project to model **electrical mismatch losses** in PV arrays using the
 [SunPower PVMismatch library] and to plot basic I–V and P–V curves.
 
-> **Scope (now):** basic STC module modelling from datasheet inputs (Voc, Isc, Vmp, Imp), put into strings, then into arrays, and quantifying mismatch over 
+> **Current Scope:** basic STC module modelling from datasheet inputs (Voc, Isc, Vmp, Imp), put into arrays and quantifying mismatch over 
 > varying scenarios such as module degradation, shading, decreased irradiance and increased temperature.
 > **Goal:** compute the STC mismatch losses as a percentage of the system MPP and/or module equivalence. 
 > **Future:** extend to non‑uniform degradation scenarios and more rigorous parameter fitting.
@@ -47,8 +47,10 @@ PVmismatch_study/
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
-├── datasheets/
+├── data/
 │   └── module_specs.py
+│   └── find_Rsh_curve.py
+│   └── Rsh_curve.csv
 └── src/
     ├── pv_system.py
     ├── mismatch_models.py
