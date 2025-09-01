@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
 from pvmismatch import pvsystem, pvstring
-from data.module_specs import std_module, degraded_module, Rsh_degraded_module
+from data.module_specs import std_module, degraded_module, Rsh_degraded_module, Rs_degraded_module
 
 def create_system(num_strings=2, num_modules=30, module_type='std', Rsh=0.25):
     """Create a PV system with a given number of strings and modules per string."""
@@ -19,14 +19,9 @@ def create_system(num_strings=2, num_modules=30, module_type='std', Rsh=0.25):
     sys.setTemps(25.0 + 273.15)  # default temperature
     return sys
 
-def create_Rsh_degraded_system(num_strings=2, num_modules=30, module_type='std', Rsh=0.25, severity=0.1):
+def create_Rsh_degraded_system(num_strings=2, num_modules=30):
     """Create a PV system with a given number of strings and modules per string."""
     pvstrs = []
-    """
-    for p in range(num_modules):
-        mods.append(linear_degraded_module(p))
-        pvstrs.append(pvstring.PVstring(pvmods=mods[p]))
-    """
     for s in range(num_strings):
         mods = [Rsh_degraded_module(p) for p in range(num_modules)]
         pvstrs.append(pvstring.PVstring(pvmods=mods))
@@ -34,7 +29,17 @@ def create_Rsh_degraded_system(num_strings=2, num_modules=30, module_type='std',
     sys.setTemps(25.0 + 273.15)  # default temperature
     return sys
 
-def plot_pv_system(system):
+def create_Rs_degraded_system(num_strings=2, num_modules=30):
+    """Create a PV system with a given number of strings and modules per string."""
+    pvstrs = []
+    for s in range(num_strings):
+        mods = [Rs_degraded_module(p) for p in range(num_modules)]
+        pvstrs.append(pvstring.PVstring(pvmods=mods))
+    sys = pvsystem.PVsystem(pvstrs=pvstrs)
+    sys.setTemps(25.0 + 273.15)  # default temperature
+    return sys
+
+def plot_pv_system(system, title='Rsh'):
     """
     Plot PV system modules as a 2D image (imshow style), where shading corresponds to module Pmp values.
     """
@@ -59,7 +64,10 @@ def plot_pv_system(system):
     )
 
     # Titles & labels
-    ax.set_title("PV System Degraded Output Map")
+    if title == 'Rsh':
+        ax.set_title("Degraded Rsh PV System Output Map")
+    else:
+        ax.set_title("Degraded Rs PV System Output Map")
     ax.set_xlabel("Module Index")
     ax.set_ylabel("String Index")
 
@@ -81,7 +89,3 @@ def plot_pv_system(system):
     plt.show()
     return fig, ax, im
 
-
-system = create_Rsh_degraded_system()
-plot_pv_system(system)
-plt.show()

@@ -4,7 +4,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pv_system import create_system, create_Rsh_degraded_system
+from pv_system import create_system, create_Rsh_degraded_system, create_Rs_degraded_system, plot_pv_system
 from mismatch_models import shade_modules, remove_modules
 from pvmismatch import pvsystem
 
@@ -65,8 +65,10 @@ plt.grid()
 # Healthy system
 pvsys_healthy = create_system()
 
-# Exponentially degraded Rsh system
-pvsys_degraded = create_Rsh_degraded_system()
+# Exponentially degraded Rsh or Rs system
+pvsys_degraded = create_Rsh_degraded_system()   # --> change to create_Rsh_degraded_system()/create_Rs_degraded_system()
+plot_pv_system(pvsys_degraded, title="Rsh")      # --> update title to match Rsh/Rs
+plt.show()
 
 # Prepare legend labels with Pmp info
 label_healthy = (f"Healthy: Vmp={pvsys_healthy.Vmp:.1f}V, "
