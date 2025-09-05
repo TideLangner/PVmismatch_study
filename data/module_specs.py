@@ -11,12 +11,7 @@ def std_module():
                          Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
     return pvmodule.PVmodule(cell_pos=pvmodule.STD72, pvcells=[cell]*72)
 
-# Degraded module with low shunt resistance
-def degraded_module(Rsh=0.25):
-    cell = pvcell.PVcell(Rs=0.00641575, Rsh=Rsh,
-                         Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
-    return pvmodule.PVmodule(cell_pos=pvmodule.STD72, pvcells=[cell]*72)
-
+# Exponentially degrading Rsh modules
 def Rsh_degraded_module(p):
     Rsh_curve = find_Rsh_curve()
     Rsh = Rsh_curve[p]
@@ -24,9 +19,17 @@ def Rsh_degraded_module(p):
                          Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
     return pvmodule.PVmodule(cell_pos=pvmodule.STD72, pvcells=[cell]*72)
 
+# Exponentially degrading Rs modules
 def Rs_degraded_module(p):
     Rs_curve = find_Rs_curve()
     Rs = Rs_curve[p]
     cell = pvcell.PVcell(Rs=Rs, Rsh=285.79,
                          Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
+    return pvmodule.PVmodule(cell_pos=pvmodule.STD72, pvcells=[cell]*72)
+
+# Degraded module with configurable Rsh, Rs, Tcell and Ee (effective irradiance)
+def degraded_module(Rsh=285.79, Rs=0.00641575, Ee=1000.0, Tcell=298.15):
+    cell = pvcell.PVcell(Rs=Rs, Rsh=Rsh,
+                         Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5,
+                         Ee=Ee, Tcell=Tcell)
     return pvmodule.PVmodule(cell_pos=pvmodule.STD72, pvcells=[cell]*72)

@@ -4,220 +4,136 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pv_system import create_system, create_Rsh_degraded_system, create_Rs_degraded_system, plot_pv_system
+from pv_system import create_std_system, create_Rsh_degraded_system, create_Rs_degraded_system, plot_pv_system
 from mismatch_models import shade_modules, remove_modules
 from pvmismatch import pvsystem
 
-"""
-# ---------- Example 1: Basic system ----------
-pvsys = create_system(module_type='std')
-print("Pmp:", pvsys.Pmp, " Vmp:", pvsys.Vmp, " Imp:", pvsys.Imp)
-ex1 = pvsys.plotSys()
+def ex1():
+    """ ---------- Example 1: Basic system ---------- """
+    pvsys1 = create_std_system(num_strings=2, num_modules=30)
+    print("Pmp:", pvsys1.Pmp, " Vmp:", pvsys1.Vmp, " Imp:", pvsys1.Imp)
+    ex1 = pvsys1.plotSys()
+    plt.tight_layout()
 
-# ---------- Example 2: Single module shading ----------
-pvsys = create_system(module_type='std')
-shade_modules(pvsys, {0: {0: 0.01}})
-print("Pmp after shading:", pvsys.Pmp)
-print("Imp after shading:", pvsys.Imp)
-print("Vmp after shading:", pvsys.Vmp)
-ex2 = pvsys.plotSys()
+def ex2():
+    """ ---------- Example 2: Single module shading ---------- """
+    pvsys2 = create_std_system()
+    pvsys2.setSuns(Ee={0: {10: 0.01}})   # set module 10, string 0 to 10% irradiance
+    print("Pmp after shading:", pvsys2.Pmp)
+    print("Imp after shading:", pvsys2.Imp)
+    print("Vmp after shading:", pvsys2.Vmp)
+    ex2 = pvsys2.plotSys()
+    plt.tight_layout()
 
-# ---------- Example 3: Partial shading & heating ----------
-pvsys = create_system(module_type='std')
-shade_modules(pvsys, {0: {0: [(0.2,)*8, (0,1,2,3,4,5,6,7)]}})
-pvsys.setTemps({0:{0:[(100.0+273.15,)*8, (0,1,2,3,4,5,6,7)]}})
-print("Pmp after partial shading & heating:", pvsys.Pmp)
-print("Imp after partial shading & heating:", pvsys.Imp)
-print("Vmp after partial shading & heating:", pvsys.Vmp)
-ex3 = pvsys.plotSys()
+def ex3():
+    """ ---------- Example 3: Partial shading & heating ---------- """
+    pvsys3 = create_std_system()
+    # set cells 0-5 in module 10, string 1 to 10% irradiance
+    pvsys3.setSuns(Ee={1: {10: {'cells':(0,1,2,3,4,5), 'Ee':(0.1,0.1,0.1,0.1,0.1,0.1)}}})
+    # set temperatures to 50 deg C
+    pvsys3.setTemps(Tc={1: {10:{'cells':(0,1,2,3,4,5), 'Tc':(323.15,323.15,323.15,323.15,323.15,323.15)}}})
 
-# ---------- Example 4: Module removal ----------
-pvsys = create_system(module_type='std')
-pvsys_degraded = remove_modules(pvsys, n_missing=3, strings_with_missing=8)
-module_eq_diff = (pvsys.Pmp - pvsys_degraded.Pmp) / (pvsys.Pmp/len(pvsys.numberMods))
-print("Module equivalent loss:", module_eq_diff)
-print("Pmp after module removal:", pvsys_degraded.Pmp)
-print("Imp after module removal:", pvsys_degraded.Imp)
-print("Vmp after module removal:", pvsys_degraded.Vmp)
-ex4 = pvsys_degraded.plotSys()
+    # Alternative
+    # pvsys3.setSuns({0: {0: [(0.2,)*8, (0,1,2,3,4,5,6,7)]}})
+    # pvsys3.setTemps({0:{0:[(100.0+273.15,)*8, (0,1,2,3,4,5,6,7)]}})
 
-# ---------- Example 5: Loop over number of strings ----------
-num_strings_list = np.unique(np.logspace(0, np.log10(50), num=10, dtype=int))
-module_eq_diff_list = []
+    print("Irradiance [%]:", 10, "|| Temps [deg C]:", 50)
+    print("Pmp after partial shading & heating:", pvsys3.Pmp)
+    print("Imp after partial shading & heating:", pvsys3.Imp)
+    print("Vmp after partial shading & heating:", pvsys3.Vmp)
+    ex3 = pvsys3.plotSys()
+    plt.tight_layout()
 
-for num_strings in num_strings_list:
-    sys = create_system(num_strings=num_strings)
-    # shade module 0 in string 0 to 90% irradiance
-    shade_modules(sys, {0:{0:0.9}})
-    diff = (sys.Pmp - create_system(num_strings=num_strings).Pmp)/(sys.Pmp/len(sys.numberMods))
-    module_eq_diff_list.append(diff)
+def ex4():
+    """ ---------- Example 4: Module removal ---------- """
+    pvsys4 = create_std_system()
+    pvsys_removal = remove_modules(pvsys4, n_missing=1, strings_with_missing=1)
+    module_eq_diff = (pvsys4.Pmp - pvsys_removal.Pmp) / (pvsys4.Pmp/len(pvsys4.numberMods))
+    print("Module equivalent loss:", module_eq_diff)
+    print("Pmp after module removal:", pvsys_removal.Pmp)
+    print("Imp after module removal:", pvsys_removal.Imp)
+    print("Vmp after module removal:", pvsys_removal.Vmp)
+    ex4 = pvsys_removal.plotSys()
 
-plt.figure()
-plt.plot(num_strings_list, module_eq_diff_list)
-plt.xlabel("Number of Strings")
-plt.ylabel("Module Equivalent Loss")
-plt.grid()
-# plt.show()
-"""
+def ex5():
+    """ ---------- Example 5: Loop over number of strings ---------- """
+    num_strings_list = np.unique(np.logspace(0, np.log10(40), num=10, dtype=int))
+    module_eq_diff_list = []
 
-# ---------- Example 6: Healthy vs Exponentially Degraded System ----------
+    for num_strings in num_strings_list:
+        sys = create_std_system(num_strings=num_strings)
+        # shade module 0 in string 0 to 90% irradiance
+        shade_modules(sys, {0:{0:0.9}})
+        diff = (sys.Pmp - create_std_system(num_strings=num_strings).Pmp)/(sys.Pmp/len(sys.numberMods))
+        module_eq_diff_list.append(diff)
 
-# Healthy system
-pvsys_healthy = create_system()
-ex6_healthy = pvsys_healthy.plotSys()
-plt.tight_layout()
-plt.show()
+    plt.figure()
+    plt.plot(num_strings_list, module_eq_diff_list, 'o-')
+    plt.title("Module Equivalent Loss vs Number of Strings for Shaded Module 0 in String 0 to 90% Irradiance")
+    plt.xlabel("Number of Strings")
+    plt.ylabel("Module Equivalent Loss")
+    plt.grid()
+    # plt.show()
 
-# Exponentially degraded Rsh system
-pvsys_Rsh_degraded = create_Rsh_degraded_system()
-plot_pv_system(pvsys_Rsh_degraded, title="Rsh")
-ex6_Rsh = pvsys_Rsh_degraded.plotSys()
-plt.tight_layout()
-plt.show()
+def compare_degraded_scenarios(show_healthy_system=False, show_Rsh_degraded_system=False, show_Rs_degraded_system=False):
+    """ ---------- Example 6: Healthy vs Exponentially Degraded System ---------- """
 
-# Exponentially degraded Rs system
-pvsys_Rs_degraded = create_Rs_degraded_system()
-plot_pv_system(pvsys_Rs_degraded, title="Rs")
-ex6_Rs = pvsys_Rs_degraded.plotSys()
-plt.tight_layout()
-plt.show()
+    # Healthy system
+    pvsys_healthy = create_std_system()
+    if show_healthy_system:
+        plot_pv_system(pvsys_healthy, title="std")
+        pvsys_healthy.plotSys()
+        plt.tight_layout()
+        plt.show()
 
-# Prepare legend labels with Pmp info
-label_healthy = (f"Healthy: Vmp={pvsys_healthy.Vmp:.1f}V, "
-                 f"Imp={pvsys_healthy.Imp:.2f}A, Pmp={pvsys_healthy.Pmp:.1f}W")
-label_Rsh_degraded = (f"Rsh Degraded: Vmp={pvsys_Rsh_degraded.Vmp:.1f}V, "
-                  f"Imp={pvsys_Rsh_degraded.Imp:.2f}A, Pmp={pvsys_Rsh_degraded.Pmp:.1f}W")
-label_Rs_degraded = (f"Rs Degraded: Vmp={pvsys_Rs_degraded.Vmp:.1f}V, "
-                  f"Imp={pvsys_Rs_degraded.Imp:.2f}A, Pmp={pvsys_Rs_degraded.Pmp:.1f}W")
+    # Exponentially degraded Rsh system
+    pvsys_Rsh_degraded = create_Rsh_degraded_system()
+    if show_Rsh_degraded_system:
+        plot_pv_system(pvsys_Rsh_degraded, title="Rsh")
+        pvsys_Rsh_degraded.plotSys()
+        plt.tight_layout()
+        plt.show()
 
-# Plot IV curves
-plt.figure(figsize=(10,6))
-plt.plot(pvsys_healthy.Vsys, pvsys_healthy.Isys, label="Healthy System", lw=2)
-plt.plot(pvsys_Rsh_degraded.Vsys, pvsys_Rsh_degraded.Isys, label="Rsh Degraded System", lw=2, ls="--")
-plt.plot(pvsys_Rs_degraded.Vsys, pvsys_Rs_degraded.Isys, label="Rs Degraded System", lw=2, ls="--")
+    # Exponentially degraded Rs system
+    pvsys_Rs_degraded = create_Rs_degraded_system()
+    if show_Rs_degraded_system:
+        plot_pv_system(pvsys_Rs_degraded, title="Rs")
+        pvsys_Rs_degraded.plotSys()
+        plt.tight_layout()
+        plt.show()
 
-# Highlight Pmp points
-plt.plot(pvsys_healthy.Vmp, pvsys_healthy.Imp, 'o', color='blue', label=label_healthy)
-plt.plot(pvsys_Rsh_degraded.Vmp, pvsys_Rsh_degraded.Imp, 'o', color='red', label=label_Rsh_degraded)
-plt.plot(pvsys_Rs_degraded.Vmp, pvsys_Rs_degraded.Imp, 'o', color='g', label=label_Rs_degraded)
+    # Prepare legend labels with Pmp info
+    label_healthy = (f"Healthy: Vmp={pvsys_healthy.Vmp:.1f}V, "
+                     f"Imp={pvsys_healthy.Imp:.2f}A, Pmp={pvsys_healthy.Pmp:.1f}W")
+    label_Rsh_degraded = (f"Rsh Degraded: Vmp={pvsys_Rsh_degraded.Vmp:.1f}V, "
+                      f"Imp={pvsys_Rsh_degraded.Imp:.2f}A, Pmp={pvsys_Rsh_degraded.Pmp:.1f}W")
+    label_Rs_degraded = (f"Rs Degraded: Vmp={pvsys_Rs_degraded.Vmp:.1f}V, "
+                      f"Imp={pvsys_Rs_degraded.Imp:.2f}A, Pmp={pvsys_Rs_degraded.Pmp:.1f}W")
 
-plt.xlabel("Voltage [V]")
-plt.ylabel("Current [A]")
-plt.title("IV Curve: Healthy vs Exponentially Degraded Rsh/Rs Systems")
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
-plt.show()
+    # Plot IV curves
+    plt.figure(figsize=(10,6))
+    plt.plot(pvsys_healthy.Vsys, pvsys_healthy.Isys, label="Healthy System", lw=2)
+    plt.plot(pvsys_Rsh_degraded.Vsys, pvsys_Rsh_degraded.Isys, label="Rsh Degraded System", lw=2, ls="--")
+    plt.plot(pvsys_Rs_degraded.Vsys, pvsys_Rs_degraded.Isys, label="Rs Degraded System", lw=2, ls="--")
 
-# Optional: print Pmp values
-print("Healthy Pmp:", pvsys_healthy.Pmp)
-print("Rsh Degraded Pmp:", pvsys_Rsh_degraded.Pmp)
-print("Rs Degraded Pmp:", pvsys_Rs_degraded.Pmp)
+    # Highlight Pmp points
+    plt.plot(pvsys_healthy.Vmp, pvsys_healthy.Imp, 'o', color='blue', label=label_healthy)
+    plt.plot(pvsys_Rsh_degraded.Vmp, pvsys_Rsh_degraded.Imp, 'o', color='red', label=label_Rsh_degraded)
+    plt.plot(pvsys_Rs_degraded.Vmp, pvsys_Rs_degraded.Imp, 'o', color='g', label=label_Rs_degraded)
 
-# ---------- Example 7: Mismatch Loss Calculator ----------
+    plt.xlabel("Voltage [V]")
+    plt.ylabel("Current [A]")
+    plt.title("IV Curve: Healthy vs Exponentially Degraded Rsh/Rs Systems")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
-def mpp_from_curve(I, V, P):
-    k = np.argmax(P)
-    return P[k].squeeze().item(), I[k].squeeze().item(), V[k].squeeze().item()
+    # Print Pmp values
+    print("Healthy Pmp:", pvsys_healthy.Pmp)
+    print("Rsh Degraded Pmp:", pvsys_Rsh_degraded.Pmp)
+    print("Rs Degraded Pmp:", pvsys_Rs_degraded.Pmp)
 
-def mismatch_report(pvsys, pvsys_healthy=None):
-    """
-    Reports degradation-only vs mismatch-only losses at the module, string, and system levels.
+    return pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded
 
-    pvsys = degraded system (with mismatch)
-    pvsys_healthy = optional healthy system for reference
-    """
-
-    # --- actual system degraded MPP (with mismatch) ---
-    Pmp_sys, _, _ = mpp_from_curve(pvsys.Isys, pvsys.Vsys, pvsys.Psys)
-
-    # --- per-string degraded (with mismatch inside strings) ---
-    Pmp_str = []
-    for pvstr in pvsys.pvstrs:
-        Pmp_s, _, _ = mpp_from_curve(pvstr.Istring, pvstr.Vstring, pvstr.Pstring)
-        Pmp_str.append(Pmp_s)
-    Pmp_str_sum = float(np.sum(Pmp_str))
-
-    # --- per-module degraded (isolated, no mismatch inside strings) ---
-    Pmp_mod = []
-    for pvstr in pvsys.pvstrs:
-        for mod in pvstr.pvmods:
-            Pmp_m, _, _ = mpp_from_curve(mod.Imod, mod.Vmod, mod.Pmod)
-            Pmp_mod.append(Pmp_m)
-    Pmp_mod_sum = float(np.sum(Pmp_mod))
-
-    # --- healthy baseline (if provided) ---
-    Pmp_mod_healthy_sum = None
-    Pmp_str_healthy_sum = None
-    Pmp_sys_healthy = None
-    if pvsys_healthy is not None:
-        # Healthy modules
-        Pmp_mod_healthy = []
-        for pvstr in pvsys_healthy.pvstrs:
-            for mod in pvstr.pvmods:
-                Pmp_m, _, _ = mpp_from_curve(mod.Imod, mod.Vmod, mod.Pmod)
-                Pmp_mod_healthy.append(Pmp_m)
-        Pmp_mod_healthy_sum = float(np.sum(Pmp_mod_healthy))
-
-        # Healthy strings
-        Pmp_str_healthy = []
-        for pvstr in pvsys_healthy.pvstrs:
-            Pmp_s, _, _ = mpp_from_curve(pvstr.Istring, pvstr.Vstring, pvstr.Pstring)
-            Pmp_str_healthy.append(Pmp_s)
-        Pmp_str_healthy_sum = float(np.sum(Pmp_str_healthy))
-
-        # Healthy system
-        Pmp_sys_healthy, _, _ = mpp_from_curve(pvsys_healthy.Isys,
-                                               pvsys_healthy.Vsys,
-                                               pvsys_healthy.Psys)
-
-    # --- Loss decomposition ---
-    losses = {}
-
-    # Module → String mismatch
-    L_mismatch_mod_to_str = Pmp_mod_sum - Pmp_str_sum
-    L_degradation_mods = (Pmp_mod_healthy_sum - Pmp_mod_sum) if Pmp_mod_healthy_sum else None
-
-    # String → System mismatch
-    L_mismatch_str_to_sys = Pmp_str_sum - Pmp_sys
-    L_degradation_strs = (Pmp_str_healthy_sum - Pmp_str_sum) if Pmp_str_healthy_sum else None
-
-    # Total system
-    L_total_mismatch = L_mismatch_mod_to_str + L_mismatch_str_to_sys
-    L_total_degradation = (Pmp_sys_healthy - Pmp_mod_sum) - L_total_mismatch if Pmp_sys_healthy else None
-    L_total = (Pmp_sys_healthy - Pmp_sys) if Pmp_sys_healthy else None
-
-    losses.update({
-        "Pmp_system_degraded": Pmp_sys,
-        "Pmp_strings_sum": Pmp_str_sum,
-        "Pmp_modules_sum": Pmp_mod_sum,
-        "Pmp_modules_healthy_sum": Pmp_mod_healthy_sum,
-
-        # Mismatch components
-        "Mismatch_mod_to_str": L_mismatch_mod_to_str,
-        "Mismatch_str_to_sys": L_mismatch_str_to_sys,
-        "Mismatch_total": L_total_mismatch,
-
-        # Degradation components
-        "Degradation_mods_only": L_degradation_mods,
-        "Degradation_strs_only": L_degradation_strs,
-        "Degradation_total": L_total_degradation,
-
-        # Total system loss
-        "Loss_total": L_total,
-
-        # Percentages (relative to healthy)
-        "Percent_mismatch": 100.0 * L_total_mismatch / Pmp_sys_healthy if Pmp_sys_healthy else None,
-        "Percent_degradation": 100.0 * L_total_degradation / Pmp_sys_healthy if (Pmp_sys_healthy and L_total_degradation) else None,
-        "Percent_total": 100.0 * L_total / Pmp_sys_healthy if Pmp_sys_healthy else None,
-    })
-
-    return losses
-
-
-# Run Mismatch Loss Calculator
-report = mismatch_report(pvsys_Rsh_degraded, pvsys_healthy=pvsys_healthy)
-
-# Print
-for k, v in report.items():
-    print(f"{k:25s}: {v}")
+pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded = compare_degraded_scenarios()

@@ -8,19 +8,21 @@ import numpy as np
 from pvmismatch import pvsystem, pvstring
 from data.module_specs import std_module, degraded_module, Rsh_degraded_module, Rs_degraded_module
 
-def create_system(num_strings=2, num_modules=30, module_type='std', Rsh=0.25):
-    """Create a PV system with a given number of strings and modules per string."""
-    if module_type == 'std':
-        mod = std_module()
-    elif module_type == 'degraded':
-        mod = degraded_module(Rsh=Rsh)
+# This function may not be necessary, as one could just use pvsystem.PVsystem() directly.
+def create_std_system(num_strings=2, num_modules=30):
+    """Create a healthy PV system with a given number of strings and modules per string."""
+    if num_modules > 30:
+        return ValueError("Cannot create a system with more than 30 modules.")
+    mod = std_module()
     pvstrs = [pvstring.PVstring(pvmods=[mod]*num_modules) for _ in range(num_strings)]
     sys = pvsystem.PVsystem(pvstrs=pvstrs)
     sys.setTemps(25.0 + 273.15)  # default temperature
     return sys
 
 def create_Rsh_degraded_system(num_strings=2, num_modules=30):
-    """Create a PV system with a given number of strings and modules per string."""
+    """Create an exponentially degrading Rsh PV system with a given number of strings and modules per string."""
+    if num_modules > 30:
+        return ValueError("Cannot create a system with more than 30 modules.")
     pvstrs = []
     for s in range(num_strings):
         mods = [Rsh_degraded_module(p) for p in range(num_modules)]
@@ -30,7 +32,9 @@ def create_Rsh_degraded_system(num_strings=2, num_modules=30):
     return sys
 
 def create_Rs_degraded_system(num_strings=2, num_modules=30):
-    """Create a PV system with a given number of strings and modules per string."""
+    """Create an exponentially degrading Rs PV system with a given number of strings and modules per string."""
+    if num_modules > 30:
+        return ValueError("Cannot create a system with more than 30 modules.")
     pvstrs = []
     for s in range(num_strings):
         mods = [Rs_degraded_module(p) for p in range(num_modules)]
@@ -39,9 +43,22 @@ def create_Rs_degraded_system(num_strings=2, num_modules=30):
     sys.setTemps(25.0 + 273.15)  # default temperature
     return sys
 
-def plot_pv_system(system, title='Rsh'):
+def create_degraded_system(num_strings=2, num_modules=30, Rsh=285.79, Rs=0.00641575, Ee=1000.0, Tcell=298.15):
+    """Create a multivariable-degraded PV system with a given number of strings and modules per string."""
+    if num_modules > 30:
+        return ValueError("Cannot create a system with more than 30 modules.")
+    mod = degraded_module(Rsh=Rsh, Rs=Rs, Ee=Ee, Tcell=Tcell)
+    pvstrs = [pvstring.PVstring(pvmods=[mod]*num_modules) for _ in range(num_strings)]
+    sys = pvsystem.PVsystem(pvstrs=pvstrs)
+    sys.setTemps(25.0 + 273.15)  # default temperature
+    return sys
+
+def plot_pv_system(system, title='std'):
     """
     Plot PV system modules as a 2D image (imshow style), where shading corresponds to module Pmp values.
+
+    Parameters: system (PVsystem),
+                title ('std' or 'Rsh' or 'Rs' or 'degraded')
     """
     num_strings = len(system.pvstrs)
     num_modules = len(system.pvstrs[0].pvmods)
@@ -64,10 +81,14 @@ def plot_pv_system(system, title='Rsh'):
     )
 
     # Titles & labels
-    if title == 'Rsh':
+    if title == 'std':
+        ax.set_title("Healthy PV System Output Map")
+    elif title == 'Rsh':
         ax.set_title("Degraded Rsh PV System Output Map")
-    else:
+    elif title == 'Rs':
         ax.set_title("Degraded Rs PV System Output Map")
+    else:
+        ax.set_title("Degraded PV System Output Map")
     ax.set_xlabel("Module Index")
     ax.set_ylabel("String Index")
 
