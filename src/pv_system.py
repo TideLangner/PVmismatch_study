@@ -6,13 +6,15 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
 from pvmismatch import pvsystem, pvstring
-from data.module_specs import std_module, degraded_module, Rsh_degraded_module, Rs_degraded_module
+from module_specs import std_module, degraded_module, Rsh_degraded_module, Rs_degraded_module
 
 # This function may not be necessary, as one could just use pvsystem.PVsystem() directly.
 def create_std_system(num_strings=2, num_modules=30):
     """Create a healthy PV system with a given number of strings and modules per string."""
     if num_modules > 30:
-        return ValueError("Cannot create a system with more than 30 modules.")
+        raise ValueError("Cannot create a system with more than 30 modules.")
+    if num_strings < 1:
+        raise ValueError("num_strings must be >= 1.")
     mod = std_module()
     pvstrs = [pvstring.PVstring(pvmods=[mod]*num_modules) for _ in range(num_strings)]
     sys = pvsystem.PVsystem(pvstrs=pvstrs)
@@ -22,7 +24,9 @@ def create_std_system(num_strings=2, num_modules=30):
 def create_Rsh_degraded_system(num_strings=2, num_modules=30):
     """Create an exponentially degrading Rsh PV system with a given number of strings and modules per string."""
     if num_modules > 30:
-        return ValueError("Cannot create a system with more than 30 modules.")
+        raise ValueError("Cannot create a system with more than 30 modules.")
+    if num_strings < 1:
+        raise ValueError("num_strings must be >= 1.")
     pvstrs = []
     for s in range(num_strings):
         mods = [Rsh_degraded_module(p) for p in range(num_modules)]
@@ -34,7 +38,9 @@ def create_Rsh_degraded_system(num_strings=2, num_modules=30):
 def create_Rs_degraded_system(num_strings=2, num_modules=30):
     """Create an exponentially degrading Rs PV system with a given number of strings and modules per string."""
     if num_modules > 30:
-        return ValueError("Cannot create a system with more than 30 modules.")
+        raise ValueError("Cannot create a system with more than 30 modules.")
+    if num_strings < 1:
+        raise ValueError("num_strings must be >= 1.")
     pvstrs = []
     for s in range(num_strings):
         mods = [Rs_degraded_module(p) for p in range(num_modules)]
@@ -46,7 +52,9 @@ def create_Rs_degraded_system(num_strings=2, num_modules=30):
 def create_degraded_system(num_strings=2, num_modules=30, Rsh=285.79, Rs=0.00641575, Ee=1000.0, Tcell=298.15):
     """Create a multivariable-degraded PV system with a given number of strings and modules per string."""
     if num_modules > 30:
-        return ValueError("Cannot create a system with more than 30 modules.")
+        raise ValueError("Cannot create a system with more than 30 modules.")
+    if num_strings < 1:
+        raise ValueError("num_strings must be >= 1.")
     mod = degraded_module(Rsh=Rsh, Rs=Rs, Ee=Ee, Tcell=Tcell)
     pvstrs = [pvstring.PVstring(pvmods=[mod]*num_modules) for _ in range(num_strings)]
     sys = pvsystem.PVsystem(pvstrs=pvstrs)

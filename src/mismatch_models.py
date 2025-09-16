@@ -13,7 +13,7 @@ def shade_modules(system, shading_dict):
     system.setSuns(shading_dict)
     return system
 
-def remove_modules(system, n_missing=1, strings_with_missing=1):
+def remove_modules(system, n_missing=1, strings_with_missing=1, show_map=False):
     """Simulate module removal by removing n_missing modules from the end of each affected string
     in strings_with_missing strings starting from the beginning."""
     pvstrs_rmvd = []
@@ -47,7 +47,7 @@ def remove_modules(system, n_missing=1, strings_with_missing=1):
         for row in layout_map:
             print(row)
 
-    return pvsys_rmvd
+    return pvsys_rmvd, layout_map
 
 
 # TODO: add degradation model

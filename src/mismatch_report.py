@@ -1,10 +1,10 @@
 # Tide Langner
 # 25 August 2025
 # Mismatch Loss Calculator
+from functools import total_ordering
 
 import numpy as np
 import matplotlib.pyplot as plt
-from simulation import pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded
 
 def mpp_from_curve(I, V, P):
     k = np.argmax(P)
@@ -12,7 +12,7 @@ def mpp_from_curve(I, V, P):
 
 def mismatch_report(pvsys, pvsys_healthy=None):
     """
-    Reports degradation-only vs mismatch-only losses at the module, string, and system levels.
+    Reports degradation-only vs mismatch-only loss_report at the module, string, and system levels.
     """
 
     # --- actual system degraded MPP (with mismatch) ---
@@ -59,136 +59,138 @@ def mismatch_report(pvsys, pvsys_healthy=None):
                                                pvsys_healthy.Psys)
 
     # --- Loss decomposition ---
-    losses = {}
+    loss_report = {}
 
-    # Module >> String mismatch
-    L_mismatch_mod_to_str = Pmp_mod_sum - Pmp_str_sum
-    L_degradation_mods = (Pmp_mod_healthy_sum - Pmp_mod_sum) if Pmp_mod_healthy_sum else None
+    # Module degradation losses
+    loss_mods_total = (Pmp_mod_healthy_sum - Pmp_mod_sum) if Pmp_mod_healthy_sum is not None else None
+    loss_mods_degradation = loss_mods_total
 
-    # String >> System mismatch
-    L_mismatch_str_to_sys = Pmp_str_sum - Pmp_sys
-    L_degradation_strs = (Pmp_str_healthy_sum - Pmp_str_sum) if Pmp_str_healthy_sum else None
+    # Module >> String mismatch losses
+    loss_mods_to_strs_mismatch = Pmp_mod_sum - Pmp_str_sum
 
-    # Total system
-    L_total_mismatch = L_mismatch_mod_to_str + L_mismatch_str_to_sys
-    L_total_degradation = (Pmp_sys_healthy - Pmp_mod_sum) - L_total_mismatch if Pmp_sys_healthy else None
-    L_total = (Pmp_sys_healthy - Pmp_sys) if Pmp_sys_healthy else None
+    # String degradation losses
+    loss_strs_total = (Pmp_str_healthy_sum - Pmp_str_sum) if Pmp_str_healthy_sum else None
+    loss_strs_degradation = loss_strs_total - loss_mods_to_strs_mismatch
 
-    losses.update({
-        "Pmp_system_degraded": Pmp_sys,
-        "Pmp_strings_sum": Pmp_str_sum,
-        "Pmp_modules_sum": Pmp_mod_sum,
-        "Pmp_modules_healthy_sum": Pmp_mod_healthy_sum,
+    # String >> System mismatch losses
+    loss_strs_to_sys_mismatch = Pmp_str_sum - Pmp_sys
+
+    # Total system losses
+    loss_total = (Pmp_sys_healthy - Pmp_sys) if Pmp_sys_healthy else None
+    loss_total_mismatch = loss_mods_to_strs_mismatch + loss_strs_to_sys_mismatch
+    loss_total_degradation = (loss_total - loss_total_mismatch) if Pmp_sys_healthy else None
+
+    loss_report.update({
+        # System power levels (degraded and healthy)
+        "total_system_power_degraded": Pmp_sys,
+        "total_system_power_healthy": Pmp_sys_healthy,
+        "total_string_power_degraded": Pmp_str_sum,
+        "total_string_power_healthy": Pmp_str_healthy_sum,
+        "total_module_power_degraded": Pmp_mod_sum,
+        "total_module_power_healthy": Pmp_mod_healthy_sum,
 
         # Mismatch components
         "  Mismatch Components": "",
-        "Mismatch_mod_to_str": L_mismatch_mod_to_str,
-        "Mismatch_str_to_sys": L_mismatch_str_to_sys,
-        "Mismatch_total": L_total_mismatch,
+        "mismatch_modules_to_strings": loss_mods_to_strs_mismatch,
+        "mismatch_strings_to_system": loss_strs_to_sys_mismatch,
+        "mismatch_total": loss_total_mismatch,
 
         # Degradation components
         "  Degradation Components": "",
-        "Degradation_mods_only": L_degradation_mods,
-        "Degradation_strs_only": L_degradation_strs,
-        "Degradation_total": L_total_degradation,
+        "degradation_modules_only": loss_mods_degradation,
+        "degradation_strings_only": loss_strs_degradation,
+        "degradation_total": loss_total_degradation,
 
         # Total system loss
         "  Total System Loss": "",
-        "Loss_total": L_total,
+        "loss_total": loss_total,
 
         # Percentages (relative to healthy)
         "  Percentages": "",
-        "Percent_mismatch": 100.0 * L_total_mismatch / Pmp_sys_healthy if Pmp_sys_healthy else None,
-        "Percent_degradation": 100.0 * L_total_degradation / Pmp_sys_healthy if (Pmp_sys_healthy and L_total_degradation) else None,
-        "Percent_total": 100.0 * L_total / Pmp_sys_healthy if Pmp_sys_healthy else None,
+        "percent_mismatch": 100.0 * loss_total_mismatch / Pmp_sys_healthy if Pmp_sys_healthy else None,
+        "percent_degradation": 100.0 * loss_total / Pmp_sys_healthy if (Pmp_sys_healthy and loss_total) else None,
+        "percent_total": 100.0 * loss_total_degradation / Pmp_sys_healthy if Pmp_sys_healthy else None,
     })
 
-    return losses
+    return loss_report
 
 def plot_mismatch_report(report, show_values=True):
     """
-    Plot stacked bar chart of module >> string and string >> system levels
-    showing production, mismatch losses and degradation losses.
-
-    Parameters
-    ----------
-    report : dict
-        Output from mismatch_report function.
-    show_values : bool
-        Whether to annotate bar values and percentages.
+    Grouped & stacked bar chart of module, string and system levels:
+      • Healthy baseline (100%)
+      • Degraded (no mismatch) – stacked actual + lost
+      • Degraded + Mismatch – stacked actual + lost (string & system only)
     """
 
-    # Levels
-    levels = ["Module >> String", "String >> System"]
+    # Healthy baselines
+    total_mod_healthy = report["total_module_power_healthy"]
+    total_str_healthy = report["total_string_power_healthy"]
+    total_sys_healthy = report["total_system_power_healthy"]
 
-    # Healthy module sum for reference
-    healthy_total = report["Pmp_modules_healthy_sum"]
+    # Modules
+    total_mod_actual = report["total_module_power_degraded"]
+    mod_degradation = report["degradation_modules_only"] or 0.0
 
-    # Calculate level components
-    production = np.array([
-        report["Pmp_modules_sum"],  # Module level
-        report["Pmp_strings_sum"],  # String level
-    ])
+    # Strings
+    total_str_actual = report["total_string_power_degraded"]
+    str_degradation = report["degradation_strings_only"] or 0.0
+    mismatch_mod_to_str = report["mismatch_modules_to_strings"]
 
-    mismatch = np.array([
-        report["Mismatch_mod_to_str"],  # Module >> String
-        report["Mismatch_str_to_sys"],  # String >> System
-    ])
+    # Systems
+    total_sys_actual = report["total_system_power_degraded"]
+    sys_degradation = report["degradation_total"] or 0.0
+    mismatch_str_to_sys = report["mismatch_strings_to_system"]
 
-    degradation = np.array([
-        report["Degradation_mods_only"],  # Module level
-        report["Degradation_strs_only"],  # String >> System
-    ])
+    # Total
+    mismatch_total = report["mismatch_total"]
 
-    # Heights for stacking
-    bottoms_mismatch = production
-    bottoms_degradation = production + mismatch
+    levels = ["Module", "String", "System"]
+    x = np.arange(len(levels))
+    width = 0.25
 
-    # Colour palette
-    colours = {
-        "production": "tab:blue",  # blue
-        "mismatch": "tab:orange",  # orange
-        "degradation": "tab:red",  # red
-    }
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Plot
-    fig, ax = plt.subplots(figsize=(11, 7))
-    bar_width = 0.6
+    # 1. Healthy baseline
+    ax.bar(x - width, [total_mod_healthy, total_str_healthy, total_sys_healthy],
+           width, color='lightgreen', label='Healthy')
 
-    ax.bar(levels, production, bar_width, label="Production", color=colours["production"])
-    ax.bar(levels, mismatch, bar_width, bottom=bottoms_mismatch, label="Mismatch Loss", color=colours["mismatch"])
-    ax.bar(levels, degradation, bar_width, bottom=bottoms_degradation, label="Degradation Loss",
-           color=colours["degradation"])
+    # 2. Degraded (no mismatch)
+    ax.bar(x, [total_mod_healthy-mod_degradation, total_str_healthy-str_degradation, total_sys_healthy-sys_degradation],
+           width, color='skyblue', label='Degraded – Actual')
+    ax.bar(x, [mod_degradation, str_degradation, sys_degradation], width,
+           bottom=[total_mod_healthy-mod_degradation, total_str_healthy-str_degradation, total_sys_healthy-sys_degradation],
+           color='dodgerblue', alpha=0.6, label='Degraded – Lost')
 
-    # Annotate values and percentages
+    # 3. Degraded + Mismatch (only string & system)
+    ax.bar(x + width, [0, total_str_actual, total_sys_actual],
+           width, color='salmon', label='Degraded+Mismatch – Actual')
+    ax.bar(x + width, [0, mismatch_mod_to_str, mismatch_total], width,
+           bottom=[0, total_str_actual, total_sys_actual],
+           color='red', alpha=0.6, label='Degraded+Mismatch – Lost')
+
+    # Labels & annotations
+    ax.set_xticks(x)
+    ax.set_xticklabels(levels)
+    ax.set_ylabel("Power [W]")
+    ax.set_title("PV System Production at Module, String, and System Levels")
+
     if show_values:
-        for i, (prod, mm, deg) in enumerate(zip(production, mismatch, degradation)):
-            total = prod + mm + deg
-            # font style
-            ax.text(i, prod / 2, f"{prod:.0f}", ha='center', va='center', color='white', fontsize=10,
-                    fontweight='medium')
-            ax.text(i, prod + mm / 2, f"{mm:.0f}", ha='center', va='center', color='white', fontsize=10,
-                    fontweight='medium')
-            ax.text(i, prod + mm + deg / 2, f"{deg:.0f}", ha='center', va='center', color='white', fontsize=10,
-                    fontweight='medium')
-            # relative percentage vs healthy
-            ax.text(i, total + 50, f"{100 * total / healthy_total:.1f}%", ha='center', va='bottom', fontsize=10,
-                    fontweight='medium', color='gray')
+        for i, val in enumerate([total_mod_healthy, total_str_healthy, total_sys_healthy]):
+            ax.text(i - width, val + 0.02 * val, f"{val:.0f}", ha='center', va='bottom', fontsize=9)
 
-    ax.set_ylabel("Power [W]", fontsize=12)
-    ax.set_title("PV System Production, Mismatch, and Degradation", fontsize=13, fontweight='medium')
+        for i, (a, l) in enumerate(zip(
+                [total_mod_healthy-mod_degradation, total_str_healthy-str_degradation, total_sys_healthy-sys_degradation],
+                [mod_degradation, str_degradation, sys_degradation])):
+            ax.text(i, a / 2, f"{a:.0f}", ha='center', va='center', color='white', fontsize=9)
+            ax.text(i, a + l / 2, f"{l:.0f}", ha='center', va='center', color='white', fontsize=9)
+
+        for i, (a, l) in enumerate(zip(
+                [0, total_str_actual, total_sys_actual], [0, mismatch_mod_to_str, mismatch_total])):
+            if a + l > 0:
+                ax.text(i + width, a / 2, f"{a:.0f}", ha='center', va='center', color='white', fontsize=9)
+                ax.text(i + width, a + l / 2, f"{l:.0f}", ha='center', va='center', color='white', fontsize=9)
+
     ax.legend()
     ax.grid(axis='y', linestyle='--', alpha=0.4)
     plt.tight_layout()
     plt.show()
-
-
-# Run report
-report = mismatch_report(pvsys_Rsh_degraded, pvsys_healthy)
-
-# Print outputs
-for k, v in report.items():
-    print(f"{k:25s}: {v}")
-
-# Plot outputs
-plot_mismatch_report(report)

@@ -4,9 +4,12 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pv_system import create_std_system, create_Rsh_degraded_system, create_Rs_degraded_system, plot_pv_system
+import pandas as pd
+from pvmismatch import *
+from pv_system import *
 from mismatch_models import shade_modules, remove_modules
-from pvmismatch import pvsystem
+from mismatch_report import mismatch_report, plot_mismatch_report
+from parametric_study import *
 
 def ex1():
     """ ---------- Example 1: Basic system ---------- """
@@ -47,7 +50,7 @@ def ex3():
 def ex4():
     """ ---------- Example 4: Module removal ---------- """
     pvsys4 = create_std_system()
-    pvsys_removal = remove_modules(pvsys4, n_missing=1, strings_with_missing=1)
+    pvsys_removal = remove_modules(pvsys4, n_missing=1, strings_with_missing=1, show_map=True)
     module_eq_diff = (pvsys4.Pmp - pvsys_removal.Pmp) / (pvsys4.Pmp/len(pvsys4.numberMods))
     print("Module equivalent loss:", module_eq_diff)
     print("Pmp after module removal:", pvsys_removal.Pmp)
@@ -75,7 +78,8 @@ def ex5():
     plt.grid()
     # plt.show()
 
-def compare_degraded_scenarios(show_healthy_system=False, show_Rsh_degraded_system=False, show_Rs_degraded_system=False):
+def compare_degraded_scenarios(show_healthy_system=False, show_Rsh_degraded_system=False,
+                               show_Rs_degraded_system=False):
     """ ---------- Example 6: Healthy vs Exponentially Degraded System ---------- """
 
     # Healthy system
@@ -136,4 +140,17 @@ def compare_degraded_scenarios(show_healthy_system=False, show_Rsh_degraded_syst
 
     return pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded
 
-pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded = compare_degraded_scenarios()
+
+if __name__ == "__main__":
+    pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded = compare_degraded_scenarios()
+    report = mismatch_report(pvsys_Rsh_degraded, pvsys_healthy)
+    # Print outputs
+    for k, v in report.items():
+         print(f"{k:25s}: {v}")
+    # Plot outputs
+    plot_mismatch_report(report)
+
+    # run the sweep for a 6-string system with 30 modules per string
+    # results = run_parametric_study(n_degraded_strings=6, m_modules_per_string=30, plot=True, normalise='module')
+    # print(results.to_string(index=False))
+
