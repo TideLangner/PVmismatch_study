@@ -5,6 +5,7 @@ from functools import total_ordering
 
 import numpy as np
 import matplotlib.pyplot as plt
+from textwrap import fill
 
 def mpp_from_curve(I, V, P):
     k = np.argmax(P)
@@ -116,81 +117,135 @@ def mismatch_report(pvsys, pvsys_healthy=None):
 
 def plot_mismatch_report(report, show_values=True):
     """
-    Grouped & stacked bar chart of module, string and system levels:
-      • Healthy baseline (100%)
-      • Degraded (no mismatch) – stacked actual + lost
-      • Degraded + Mismatch – stacked actual + lost (string & system only)
+    Condensed visualization that aligns with the requested layout:
+
+      1) "healthy system output": single bar (system healthy Pmp).
+      2) "degradation-only output": one stacked bar:
+            - bottom: degradation-only output (healthy - degradation loss)
+            - top: degradation loss
+         (module/string/system degradation-only outputs are equal by construction)
+      3) "module->string mismatch loss": one stacked bar:
+            - bottom: total_string_actual (with module->string mismatch applied)
+            - top: mismatch_modules_to_strings
+      4) "string->system mismatch loss": one stacked bar:
+            - bottom: total_system_actual (final actual)
+            - top: mismatch_strings_to_system
+
+      Also annotates percentages of:
+        - degradation loss
+        - mismatch (mod->str)
+        - mismatch (str->sys)
+        - mismatch_total
     """
 
-    # Healthy baselines
-    total_mod_healthy = report["total_module_power_healthy"]
-    total_str_healthy = report["total_string_power_healthy"]
-    total_sys_healthy = report["total_system_power_healthy"]
+    # Healthy references (equal at module/string/system levels in this report's formulation)
+    total_mod_healthy = report.get("total_module_power_healthy")
+    total_str_healthy = report.get("total_string_power_healthy")
+    total_sys_healthy = report.get("total_system_power_healthy")
+    H = total_sys_healthy if total_sys_healthy is not None else 0.0
 
-    # Modules
-    total_mod_actual = report["total_module_power_degraded"]
-    mod_degradation = report["degradation_modules_only"] or 0.0
+    # Degradation-only (equal across levels; take system level)
+    deg_loss = report.get("degradation_total") or 0.0
+    deg_only_output = max(H - deg_loss, 0.0)
 
-    # Strings
-    total_str_actual = report["total_string_power_degraded"]
-    str_degradation = report["degradation_strings_only"] or 0.0
-    mismatch_mod_to_str = report["mismatch_modules_to_strings"]
+    # Actuals and mismatch components
+    total_str_actual = report.get("total_string_power_degraded") or 0.0
+    total_sys_actual = report.get("total_system_power_degraded") or 0.0
+    mismatch_mod_to_str = report.get("mismatch_modules_to_strings") or 0.0
+    mismatch_str_to_sys = report.get("mismatch_strings_to_system") or 0.0
+    mismatch_total = report.get("mismatch_total") or 0.0
 
-    # Systems
-    total_sys_actual = report["total_system_power_degraded"]
-    sys_degradation = report["degradation_total"] or 0.0
-    mismatch_str_to_sys = report["mismatch_strings_to_system"]
+    # Helper for percentages relative to healthy
+    def pct(x):
+        return 100.0 * x / H if H else 0.0
 
-    # Total
-    mismatch_total = report["mismatch_total"]
+    pct_deg = pct(deg_loss)
+    pct_mm_mod_str = pct(mismatch_mod_to_str)
+    pct_mm_str_sys = pct(mismatch_str_to_sys)
+    pct_mm_total = pct(mismatch_total)
 
-    levels = ["Module", "String", "System"]
-    x = np.arange(len(levels))
-    width = 0.25
+    # Layout
+    labels = [
+        "healthy system output",
+        "degradation-only output",
+        "module->string mismatch loss",
+        "string->system mismatch loss",
+    ]
+    x = np.arange(len(labels))
+    width = 0.5
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # 1. Healthy baseline
-    ax.bar(x - width, [total_mod_healthy, total_str_healthy, total_sys_healthy],
-           width, color='lightgreen', label='Healthy')
+    # 1) Healthy system output
+    ax.bar(x[0], H, width, color='lightgreen', label='Healthy')
 
-    # 2. Degraded (no mismatch)
-    ax.bar(x, [total_mod_healthy-mod_degradation, total_str_healthy-str_degradation, total_sys_healthy-sys_degradation],
-           width, color='skyblue', label='Degraded – Actual')
-    ax.bar(x, [mod_degradation, str_degradation, sys_degradation], width,
-           bottom=[total_mod_healthy-mod_degradation, total_str_healthy-str_degradation, total_sys_healthy-sys_degradation],
-           color='dodgerblue', alpha=0.6, label='Degraded – Lost')
+    # 2) Degradation-only stacked bar
+    ax.bar(x[1], deg_only_output, width, color='skyblue', label='Degradation-only Output')
+    ax.bar(x[1], deg_loss, width, bottom=deg_only_output, color='dodgerblue', alpha=0.7, label='Degradation-only Loss')
 
-    # 3. Degraded + Mismatch (only string & system)
-    ax.bar(x + width, [0, total_str_actual, total_sys_actual],
-           width, color='salmon', label='Degraded+Mismatch – Actual')
-    ax.bar(x + width, [0, mismatch_mod_to_str, mismatch_total], width,
-           bottom=[0, total_str_actual, total_sys_actual],
-           color='red', alpha=0.6, label='Degraded+Mismatch – Lost')
+    # 3) Module->String mismatch stacked bar
+    ax.bar(x[2], total_str_actual, width, color='peachpuff', label='String Output')
+    ax.bar(x[2], mismatch_mod_to_str, width, bottom=total_str_actual, color='orangered', alpha=0.75, label='Mismatch (mod->str)')
 
-    # Labels & annotations
+    # 4) String->System mismatch stacked bar
+    ax.bar(x[3], total_sys_actual, width, color='mistyrose', label='System Output')
+    ax.bar(x[3], mismatch_str_to_sys, width, bottom=total_sys_actual, color='crimson', alpha=0.75, label='Mismatch (str->sys)')
+
+    # Axes/labels
+    wrapped_labels = [fill(lbl, width=16) for lbl in labels]
     ax.set_xticks(x)
-    ax.set_xticklabels(levels)
+    ax.set_xticklabels(wrapped_labels, rotation=0)
     ax.set_ylabel("Power [W]")
-    ax.set_title("PV System Production at Module, String, and System Levels")
+    ax.set_title("Healthy vs Degradation-only and Mismatch Losses")
 
+    # Numeric annotations
     if show_values:
-        for i, val in enumerate([total_mod_healthy, total_str_healthy, total_sys_healthy]):
-            ax.text(i - width, val + 0.02 * val, f"{val:.0f}", ha='center', va='bottom', fontsize=9)
+        # Healthy
+        if H:
+            ax.text(x[0], H * 1.01, f"{H:.0f} W", ha="center", va="bottom", fontsize=9, color="black")
 
-        for i, (a, l) in enumerate(zip(
-                [total_mod_healthy-mod_degradation, total_str_healthy-str_degradation, total_sys_healthy-sys_degradation],
-                [mod_degradation, str_degradation, sys_degradation])):
-            ax.text(i, a / 2, f"{a:.0f}", ha='center', va='center', color='white', fontsize=9)
-            ax.text(i, a + l / 2, f"{l:.0f}", ha='center', va='center', color='white', fontsize=9)
+        # Degradation-only
+        if deg_only_output:
+            ax.text(x[1], deg_only_output / 2, f"{deg_only_output:.0f} W", ha="center", va="center", color="black",
+                    fontsize=9)
+        if deg_loss:
+            ax.text(x[1], deg_only_output + deg_loss / 2, f"{deg_loss:.0f} W\n({pct_deg:.1f}%)",
+                    ha="center", va="center", color="black", fontsize=9)
 
-        for i, (a, l) in enumerate(zip(
-                [0, total_str_actual, total_sys_actual], [0, mismatch_mod_to_str, mismatch_total])):
-            if a + l > 0:
-                ax.text(i + width, a / 2, f"{a:.0f}", ha='center', va='center', color='white', fontsize=9)
-                ax.text(i + width, a + l / 2, f"{l:.0f}", ha='center', va='center', color='white', fontsize=9)
+        # Mod->Str mismatch
+        if total_str_actual:
+            ax.text(x[2], total_str_actual / 2, f"{total_str_actual:.0f} W", ha="center", va="center", color="black",
+                    fontsize=9)
+        if mismatch_mod_to_str:
+            ax.text(x[2], total_str_actual + mismatch_mod_to_str / 2,
+                    f"{mismatch_mod_to_str:.0f} W\n({pct_mm_mod_str:.1f}%)",
+                    ha="center", va="center", color="black", fontsize=9)
 
-    ax.legend()
+        # Str->Sys mismatch
+        if total_sys_actual:
+            ax.text(x[3], total_sys_actual / 2, f"{total_sys_actual:.0f} W", ha="center", va="center", color="black",
+                    fontsize=9)
+        if mismatch_str_to_sys:
+            ax.text(x[3], total_sys_actual + mismatch_str_to_sys / 2,
+                    f"{mismatch_str_to_sys:.0f} W\n({pct_mm_str_sys:.1f}%)",
+                    ha="center", va="center", color="black", fontsize=9)
+
+        # Total mismatch note
+        ymax = max(
+            H,
+            deg_only_output + deg_loss,
+            total_str_actual + mismatch_mod_to_str,
+            total_sys_actual + mismatch_str_to_sys
+        )
+        if mismatch_total:
+            ax.text(x[-1] + 0.55, ymax * 0.95, f"Total Mismatch: {mismatch_total:.0f} W ({pct_mm_total:.1f}%)",
+                    ha="left", va="top", fontsize=9, color="dimgray")
+
+    # Legend (deduplicate)
+    handles, labels_ = ax.get_legend_handles_labels()
+    uniq = dict(zip(labels_, handles))
+    ax.legend(uniq.values(), uniq.keys(), loc="best")
+
     ax.grid(axis='y', linestyle='--', alpha=0.4)
     plt.tight_layout()
     plt.show()

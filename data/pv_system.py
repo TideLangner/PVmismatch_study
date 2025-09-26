@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
 from pvmismatch import pvsystem, pvstring
-from module_specs import std_module, degraded_module, Rsh_degraded_module, Rs_degraded_module
+from data.module_specs import std_module, degraded_module, Rsh_degraded_module, Rs_degraded_module
 
 # This function may not be necessary, as one could just use pvsystem.PVsystem() directly.
 def create_std_system(num_strings=2, num_modules=30):
