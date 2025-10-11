@@ -1,0 +1,7 @@
+scenario,k_peak,affected_strings_peak,z_peak [%]
+10% Degraded,30,1,29.769
+20% Degraded,27,1,36.1705
+30% Degraded,18,1,38.2028
+40% Degraded,13,1,41.1473
+50% Degraded,9,1,45.527
+60% Degraded,7,1,51.8945

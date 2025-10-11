@@ -56,7 +56,7 @@ R_s0, R_sh0, E_e0 = 0.0043, 10.0, 1.0
 V, I = make_IV_curve(R_s0, R_sh0, E_e0)
 
 # ---- Set up figure ----
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(10, 6))
 plt.subplots_adjust(left=0.25, bottom=0.35)
 (line,) = ax.plot(V, I, lw=2, color="red")
 ax.set_xlabel("Voltage [V]")

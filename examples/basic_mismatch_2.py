@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from src.mismatch_report import mismatch_report, plot_mismatch_report
+from alternate_simulation.mismatch_report import mismatch_report, plot_mismatch_report
 from basic_mismatch import *
 
 def build_all_reports(healthy_sys, degraded_sys, mismatch_sys):
@@ -155,7 +155,7 @@ def plot_mismatch_hotspots(pvsys, title="Module-level mismatch at system MPP"):
                     ax.text(j, i, f"{val:.0f}", ha="center", va="center",
                             fontsize=8, color="black")
 
-    # Colorbar
+    # Colourbar
     cbar = fig.colorbar(im, ax=ax, pad=0.02)
     cbar.set_label("Module mismatch loss [W] at system MPP")
 

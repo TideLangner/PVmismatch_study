@@ -1,7 +1,6 @@
 import numpy as np
 from pvmismatch.pvmismatch_lib import pvcell, pvmodule, pvstring, pvsystem
 import matplotlib.pyplot as plt
-from src.mismatch_report import mismatch_report, plot_mismatch_report
 
 ### Healthy System
 my_cell = pvcell.PVcell(Rs=0.00641575, Rsh=285.79,
@@ -18,14 +17,14 @@ my_system = pvsystem.PVsystem(pvmods=[my_module]*4, pvstrs=my_string, numberStrs
 Isys, Vsys, Psys = my_system.Isys, my_system.Vsys, my_system.Psys
 
 def plot_healthy():
-    fig, (ax_iv, ax_pv) = plt.subplots(2, 1, figsize=(5, 7))
+    fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(10, 6))
 
     # IV subplot
     # ax_iv.plot(Vcell, Icell, label="Cell",   color="tab:blue")
     ax_iv.plot(Vmod,  Imod,  label="Module", color="tab:red")
     ax_iv.plot(Vstr,  Istr,  label="String", color="tab:orange")
     ax_iv.plot(Vsys,  Isys,  label="System", color="tab:green")
-    ax_iv.set_title("I–V Curves") # for Healthy Module, String and System\nIn a 2x2 System", wrap=True)
+    ax_iv.set_title("I–V Curves for Healthy Module, String and System\nIn a 2x2 System", wrap=True)
     ax_iv.set_xlabel("Voltage [V]")
     ax_iv.set_xlim(0, 1.1*np.max(Vsys))
     ax_iv.set_ylabel("Current [A]")
@@ -38,7 +37,7 @@ def plot_healthy():
     ax_pv.plot(Vmod,  Pmod,  label="Module", color="tab:red")
     ax_pv.plot(Vstr,  Pstr,  label="String", color="tab:orange")
     ax_pv.plot(Vsys,  Psys,  label="System", color="tab:green")
-    ax_pv.set_title("P–V Curves") # for Healthy Module, String and System\nIn a 2x2 System", wrap=True)
+    ax_pv.set_title("P–V Curves for Healthy Module, String and System\nIn a 2x2 System", wrap=True)
     ax_pv.set_xlabel("Voltage [V]")
     ax_pv.set_xlim(0, 1.1*np.max(Vsys))
     ax_pv.set_ylabel("Power [W]")

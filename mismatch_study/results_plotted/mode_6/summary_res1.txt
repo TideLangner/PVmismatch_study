@@ -1,0 +1,7 @@
+Mode 6 - 60% Degraded (resolution=1)
+
+- metric_system_MPP_degraded: saved -> metric_system_MPP_degraded_res1.png | unit=W | min=503514.781, mean=1011246.188, max=1264054.125 @ (K=0, N=0)
+- metric_total_system_loss: saved -> metric_total_system_loss_res1.png | unit=W | min=2.817, mean=252810.797, max=760542.188 @ (K=30, N=150)
+- metric_mismatch_total: saved -> metric_mismatch_total_res1.png | unit=W | min=-0.001, mean=63218.738, max=131996.500 @ (K=18, N=102)
+- metric_percent_mismatch_total: saved -> metric_percent_mismatch_total_res1.png | unit=% | min=-0.000, mean=5.001, max=10.442 @ (K=18, N=102)
+- metric_percent_mismatch_to_loss: saved -> metric_percent_mismatch_to_loss_res1.png | unit=% | min=-0.032, mean=29.777, max=51.894 @ (K=7, N=1)

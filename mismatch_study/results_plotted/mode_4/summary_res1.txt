@@ -1,0 +1,7 @@
+Mode 4 - 40% Degraded (resolution=1)
+
+- metric_system_MPP_degraded: saved -> metric_system_MPP_degraded_res1.png | unit=W | min=757993.188, mean=1105888.000, max=1264054.125 @ (K=0, N=0)
+- metric_total_system_loss: saved -> metric_total_system_loss_res1.png | unit=W | min=2.817, mean=158168.891, max=506063.750 @ (K=30, N=150)
+- metric_mismatch_total: saved -> metric_mismatch_total_res1.png | unit=W | min=-0.001, mean=31804.719, max=76113.969 @ (K=27, N=82)
+- metric_percent_mismatch_total: saved -> metric_percent_mismatch_total_res1.png | unit=% | min=-0.000, mean=2.516, max=6.021 @ (K=27, N=82)
+- metric_percent_mismatch_to_loss: saved -> metric_percent_mismatch_to_loss_res1.png | unit=% | min=-0.032, mean=23.011, max=41.147 @ (K=13, N=1)

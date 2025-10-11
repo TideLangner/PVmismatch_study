@@ -1,6 +1,7 @@
 # Core
 numpy>=1.26
-matplotlib>=3.8
+matplotlib>=3.8,
+scipy>=1.10
 
 # PVMismatch (official SunPower repo, last release is 4.1.2 from 2024)
 pvmismatch>=4.1.2
