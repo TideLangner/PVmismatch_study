@@ -4,10 +4,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from alternate_data.pv_system import create_std_system, create_Rsh_degraded_system, create_Rs_degraded_system, plot_pv_system
+from case_study_data.pv_system import create_std_system, create_Rsh_degraded_system, create_Rs_degraded_system, plot_pv_system
 from mismatch_models import shade_modules, remove_modules
 from mismatch_report import mismatch_report, plot_mismatch_report
-from parametric_study import run_parametric_study, plot_parametric_results
 
 def ex1():
     """ ---------- Example 1: Basic system ---------- """
@@ -76,8 +75,8 @@ def ex5():
     plt.grid()
     # plt.show()
 
-def compare_degraded_scenarios(show_healthy_system=False, show_Rsh_degraded_system=False,
-                               show_Rs_degraded_system=False):
+def compare_degraded_scenarios(show_healthy_system=False, show_Rsh_degraded_system=True,
+                               show_Rs_degraded_system=True):
     """ ---------- Example 6: Healthy vs Exponentially Degraded System ---------- """
 
     # Healthy system
@@ -139,17 +138,15 @@ def compare_degraded_scenarios(show_healthy_system=False, show_Rsh_degraded_syst
     return pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded
 
 
-if __name__ == "__main__":
-    # Create systems and return mismatch reports
-    pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded = compare_degraded_scenarios()
-    report = mismatch_report(pvsys_Rsh_degraded, pvsys_healthy)
-    # Print outputs
-    for k, v in report.items():
-         print(f"{k:25s}: {v}")
-    # Plot outputs
-    plot_mismatch_report(report)
+# ===== RUN =====
+# Create systems and return mismatch reports
+pvsys_healthy, pvsys_Rsh_degraded, pvsys_Rs_degraded = compare_degraded_scenarios()
+report = mismatch_report(pvsys_Rsh_degraded, pvsys_healthy)
 
-    # run the sweep for a 6-string system with 30 modules per string
-    # results = run_parametric_study(n_degraded_strings=6, m_modules_per_string=30, plot=True, normalise='module')
-    # print(results.to_string(index=False))
+# Print outputs
+for k, v in report.items():
+     print(f"{k:25s}: {v}")
+
+# Plot outputs
+plot_mismatch_report(report)
 

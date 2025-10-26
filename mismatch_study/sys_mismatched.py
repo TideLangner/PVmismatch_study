@@ -1,14 +1,12 @@
+# Tide Langner
 # Mismatch System Builder
 
 import numpy as np
 from pvmismatch.pvmismatch_lib import pvstring, pvsystem
 
-# choose resolution (1, 5, 10, 30)
-# choose min degraded modules (>=1)
-# choose max degraded modules (<=30)
 
-def create_mismatched(degraded_sets=1, min_degraded_modules=1, max_degraded_modules=30, clamp_after_max=False,
-                      module_healthy=None, module_degraded=None):
+def create_mismatched_pyramid(degraded_sets=1, min_degraded_modules=1, max_degraded_modules=30, clamp_after_max=False,
+                              module_healthy=None, module_degraded=None):
     """
     Build a pyramid-like mismatched PV system:
     - 150 strings organised into 5 "sets" (30 strings each)
@@ -102,6 +100,49 @@ def create_mismatched_parametric(min_degraded_modules=None, num_degraded_strings
 
     return pvsystem.PVsystem(pvstrs=pv_strings)
 
+def create_mismatched_multimodal(min_degraded_modules=None, num_degraded_strings=None,
+                                 module_healthy=None, modules_degraded_levels=None):
+    """
+    Build a mismatched PV system with multiple degraded levels spread evenly:
+      - Within a string: first K modules are degraded and cycle levels 1..L (wrap).
+      - Across strings: the starting level offset advances by +1 per string (r = s_idx % L).
+
+    Parameters:
+      - min_degraded_modules (int): K degraded modules per affected string (0..30)
+      - num_degraded_strings (int): N affected strings (0..150), taken from the start
+      - module_healthy: healthy PVmodule instance
+      - modules_degraded_levels (Sequence[PVmodule]): ordered degraded level variants
+    """
+    total_strings = 150
+    mods_per_string = 30
+    L = len(modules_degraded_levels)
+
+    if not modules_degraded_levels:
+        raise ValueError("modules_degraded_levels must be a non-empty sequence of degraded PVmodule variants.")
+
+    k = int(np.clip(min_degraded_modules or 0, 0, mods_per_string))
+    n = int(np.clip(num_degraded_strings or 0, 0, total_strings))
+
+    pv_strings = []
+    for s_idx in range(total_strings):
+        if s_idx < n and k > 0:
+            # Per-string starting offset (+1 per string)
+            r = s_idx % L
+            mods = []
+            for pos in range(k):
+                # First K modules: degraded, cycling from offset r
+                lvl_idx = (r + pos) % L
+                mods.append(modules_degraded_levels[lvl_idx])
+            # Remaining modules: healthy
+            mods.extend([module_healthy] * (mods_per_string - k))
+            pv_strings.append(pvstring.PVstring(pvmods=mods))
+        else:
+            pv_strings.append(pvstring.PVstring(pvmods=[module_healthy] * mods_per_string))
+
+    return pvsystem.PVsystem(pvstrs=pv_strings)
+
+
+# --- Visualise/Print pyramid system---
 def system_binary_matrix(pvsys, module_degraded=None):
     """
     Return a 150x30 matrix of 0/1 where 0=healthy module, 1=degraded module
@@ -117,7 +158,7 @@ def print_system(pvsys, module_degraded=None):
     Print full system as lines of 30 characters per string.
     - '0' denotes healthy modules
     - '1' denotes degraded modules
-    Groups output by the 5 sets (30 strings each).
+    Groups output by 5 sets (30 strings each).
     """
     mat = system_binary_matrix(pvsys, module_degraded)
     strings_per_set = 30

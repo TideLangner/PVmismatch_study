@@ -1,7 +1,7 @@
 scenario,k_peak,affected_strings_peak,z_peak [%]
-10% Degraded,30,72,1.01391
-20% Degraded,30,74,3.07945
-30% Degraded,30,76,4.89469
-40% Degraded,27,82,6.0214
-50% Degraded,21,90,7.61904
-60% Degraded,18,102,10.4423
+Degradation Mode 1,30,72,1.01391
+Degradation Mode 2,30,74,3.07945
+Degradation Mode 3,30,76,4.89469
+Degradation Mode 4,27,82,6.0214
+Degradation Mode 5,21,90,7.61904
+Degradation Mode 6,18,102,10.4423

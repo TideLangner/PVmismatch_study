@@ -1,8 +1,11 @@
+# Tide Langner
+# Build a simple PV system with 2 strings that have 2 mods each
+
 import numpy as np
 from pvmismatch.pvmismatch_lib import pvcell, pvmodule, pvstring, pvsystem
 import matplotlib.pyplot as plt
 
-### Healthy System
+# --- Healthy System ---
 my_cell = pvcell.PVcell(Rs=0.00641575, Rsh=285.79,
                        Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
 Icell, Vcell, Pcell = my_cell.Icell, my_cell.Vcell, my_cell.Pcell
@@ -49,7 +52,7 @@ def plot_healthy():
     plt.show()
 
 
-### Fully Degraded System
+# --- Fully Degraded System ---
 # degrade cell, mod, sys by doubling Rs and halving Rsh
 my_degraded_cell_1 = pvcell.PVcell(Rs=0.00641575*2, Rsh=285.79/2,
                        Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
@@ -97,13 +100,15 @@ def plot_degraded_1():
     plt.show()
 
 
-### Mismatch System (1 str healthy, 1 str degraded by 1 module)
+# --- Mismatch System (1 str healthy, 1 str degraded by 1 module) ---
 mismatch_str_1 = pvstring.PVstring(pvmods=[my_module, my_degraded_module_1], numberMods=2)
 Imis_str_1, Vmis_str_1, Pmis_str_1 = mismatch_str_1.Istring, mismatch_str_1.Vstring, mismatch_str_1.Pstring
 
 mismatch_sys_1 = pvsystem.PVsystem(pvstrs=[my_string, mismatch_str_1], numberStrs=2)
 Imis_sys_1, Vmis_sys_1, Pmis_sys_1 = mismatch_sys_1.Isys, mismatch_sys_1.Vsys, mismatch_sys_1.Psys
 
+
+# --- Mismatch Report Components ---
 def mpp_from_curve(I, V, P):
     """Return (Pmp, Imp, Vmp) from sampled I-V-P arrays"""
     k = np.argmax(P)
@@ -143,8 +148,10 @@ def mismatch_components(pvsys):
         "mismatch_total": mods_to_strs_mismatch + strs_to_sys_mismatch,
     }
 
+
+# === RUN ===
 # Calculate for healthy and mismatch systems
-report_healthy  = mismatch_components(my_system)
+report_healthy = mismatch_components(my_system)
 report_mismatch = mismatch_components(mismatch_sys_1)
 
 # Print concise comparison
@@ -160,6 +167,9 @@ print("\n=== Delta (Healthy - Mismatch) ===")
 for k in report_mismatch:
     dh = report_healthy[k] - report_mismatch[k]
     print(f"{k}: {dh:.2f} W")
+
+
+# === Plot ===
 
 def plot_mismatch():
     fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(10, 4))
@@ -193,10 +203,10 @@ def plot_mismatch():
 def plot_healthy_vs_mismatch(healthy_sys, mismatch_sys):
     """
     Plot healthy vs mismatched system IV and PV curves.
-    - Marks MPPs with dots.
-    - Shows dashed guide lines at each MPP.
-    - Annotates total loss vs healthy and mismatch-only loss.
-    - Draws an arrow showing delta-P between the two MPPs on the PV plot.
+    - Mark MPPs with dots.
+    - Show dashed guide lines at each MPP.
+    - Annotate total loss vs healthy and mismatch-only loss.
+    - Draw an arrow showing delta-P between the two MPPs on the PV plot.
     """
     # Healthy curves and MPP
     Ih, Vh, Ph = healthy_sys.Isys, healthy_sys.Vsys, healthy_sys.Psys
@@ -286,8 +296,8 @@ def plot_healthy_vs_mismatch(healthy_sys, mismatch_sys):
     plt.tight_layout()
     plt.show()
 
-# Plot healthy vs mismatched system
-plot_healthy()
+# === Run Mismatch Plots ===
+# plot_healthy()
 # plot_degraded_1()
 # plot_healthy_vs_mismatch(my_system, mismatch_sys_1)
 

@@ -1,6 +1,6 @@
 {
   "degradation_mode": 5,
-  "deg_label": "50% Degraded",
+  "deg_label": "Degradation Mode 5",
   "resolution": 1,
   "num_rows": 151,
   "num_cols": 31,
