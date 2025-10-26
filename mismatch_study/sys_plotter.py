@@ -13,6 +13,7 @@ def plot_system_comparisons(healthy=None, degraded=None, mismatched=None):
     - degraded: fully degraded PVMismatch system
     - mismatched: partially degraded PVMismatch system
     """
+    from matplotlib.ticker import EngFormatter
 
     # Extract case_study_data
     Isys, Vsys, Psys = healthy["Isys"], healthy["Vsys"], healthy["Psys"]
@@ -22,14 +23,20 @@ def plot_system_comparisons(healthy=None, degraded=None, mismatched=None):
 
     fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(11, 6))
 
+    formatter = EngFormatter()
+    ax_iv.xaxis.set_major_formatter(formatter)
+    ax_iv.yaxis.set_major_formatter(formatter)
+    ax_pv.xaxis.set_major_formatter(formatter)
+    ax_pv.yaxis.set_major_formatter(formatter)
+
     # IV subplot
     ax_iv.plot(Vsys, Isys, label="Healthy System", color="tab:green")
     ax_iv.plot(Vsys_deg, Isys_deg, label=f"{deg_label} System", color="tab:red")
     ax_iv.plot(Vsys_mis, Isys_mis, label="Mismatched System", color="tab:purple")
-    ax_iv.set_title("I–V Curves for All Systems")
-    ax_iv.set_xlabel("Voltage [V]")
+    ax_iv.set_title("I–V Curves for All Systems", fontweight="bold")
+    ax_iv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_iv.set_xlim(0, 1.1 * np.max(Vsys))
-    ax_iv.set_ylabel("Current [A]")
+    ax_iv.set_ylabel("Current [A]", fontweight="bold")
     ax_iv.set_ylim(0, 1.1 * np.max(Isys))
     ax_iv.grid(True, linestyle="--", alpha=0.4)
     ax_iv.legend()
@@ -38,10 +45,10 @@ def plot_system_comparisons(healthy=None, degraded=None, mismatched=None):
     ax_pv.plot(Vsys, Psys, label="Healthy System", color="tab:green")
     ax_pv.plot(Vsys_deg, Psys_deg, label=f"{deg_label} System", color="tab:red")
     ax_pv.plot(Vsys_mis, Psys_mis, label="Mismatched System", color="tab:purple")
-    ax_pv.set_title("P–V Curves for All Systems")
-    ax_pv.set_xlabel("Voltage [V]")
+    ax_pv.set_title("P–V Curves for All Systems", fontweight="bold")
+    ax_pv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_pv.set_xlim(0, 1.1 * np.max(Vsys))
-    ax_pv.set_ylabel("Power [W]")
+    ax_pv.set_ylabel("Power [W]", fontweight="bold")
     ax_pv.set_ylim(0, 1.1 * np.max(Psys))
     ax_pv.grid(True, linestyle="--", alpha=0.4)
     ax_pv.legend()
@@ -62,6 +69,8 @@ def plot_healthy_vs_mismatch(healthy=None, mismatched=None):
     - healthy: healthy PVMismatch system
     - mismatched: partially degraded PVMismatch system
     """
+    from matplotlib.ticker import EngFormatter
+
     # Healthy curves and MPP
     Isys, Vsys, Psys = healthy.Isys, healthy.Vsys, healthy.Psys
     Pmp_sys, Imp_sys, Vmp_sys = mpp_from_curve(Isys, Vsys, Psys)
@@ -83,6 +92,12 @@ def plot_healthy_vs_mismatch(healthy=None, mismatched=None):
 
     fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(11, 6))
 
+    formatter = EngFormatter()
+    ax_iv.xaxis.set_major_formatter(formatter)
+    ax_iv.yaxis.set_major_formatter(formatter)
+    ax_pv.xaxis.set_major_formatter(formatter)
+    ax_pv.yaxis.set_major_formatter(formatter)
+
     # --- IV subplot ---
     ax_iv.plot(Vsys, Isys, label="Healthy System", color="tab:green", lw=1.4)
     ax_iv.plot(Vsys_mis, Isys_mis, label="Mismatched System", color="tab:purple", lw=1.4)
@@ -95,10 +110,10 @@ def plot_healthy_vs_mismatch(healthy=None, mismatched=None):
     ax_iv.axvline(Vmp_sys, color="tab:green", ls="--", lw=1, alpha=0.7)
     ax_iv.axvline(Vmp_mis, color="tab:purple", ls="--", lw=1, alpha=0.7)
 
-    ax_iv.set_title("I–V: Healthy vs Mismatch")
-    ax_iv.set_xlabel("Voltage [V]")
+    ax_iv.set_title("I–V: Healthy vs Mismatch", fontweight="bold")
+    ax_iv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_iv.set_xlim(0, Vmax)
-    ax_iv.set_ylabel("Current [A]")
+    ax_iv.set_ylabel("Current [A]", fontweight="bold")
     ax_iv.set_ylim(0, Imax)
     ax_iv.grid(True, linestyle="--", alpha=0.4)
     ax_iv.legend(loc="best")
@@ -143,10 +158,10 @@ def plot_healthy_vs_mismatch(healthy=None, mismatched=None):
         va="top", ha="left", color="crimson", fontsize=9
     )
 
-    ax_pv.set_title("P–V: Healthy vs Mismatch")
-    ax_pv.set_xlabel("Voltage [V]")
+    ax_pv.set_title("P–V: Healthy vs Mismatch", fontweight="bold")
+    ax_pv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_pv.set_xlim(0, Vmax)
-    ax_pv.set_ylabel("Power [W]")
+    ax_pv.set_ylabel("Power [W]", fontweight="bold")
     ax_pv.set_ylim(0, Pmax)
     ax_pv.grid(True, linestyle="--", alpha=0.4)
     ax_pv.legend(loc="best")
@@ -173,16 +188,20 @@ def plot_parametric_2d(k_values, mod2str_values, set_values, str2sys_values,
     - mod2str_percents_vs_loss: optional array-like of floats [%] percent_mismatch_strs_vs_loss (aligned with k_values)
     - str2sys_percents_vs_loss: optional array-like of floats [%] percent_mismatch_total_vs_loss (aligned with set_values)
     """
+    from matplotlib.ticker import EngFormatter
+    formatter = EngFormatter()
 
     fig, axes = plt.subplots(2, 1, figsize=(11, 7))
 
     # Top subplot: mod -> str mismatch vs degraded modules per string
     ax0 = axes[0]
     ln_w, = ax0.plot(k_values, mod2str_values, marker="o", color="mediumvioletred", label="String Mismatch (mods->str) [W]")
-    ax0.set_title("(String-Normalised) Module -> String Mismatch vs Degraded Modules per String")
-    ax0.set_xlabel("Degraded modules per string")
-    ax0.set_ylabel("Mismatch [W]")
+    ax0.set_title("(String-Normalised) Module -> String Mismatch vs Degraded Modules per String", fontweight="bold")
+    ax0.set_xlabel("Degraded modules per string", fontweight="bold")
+    ax0.set_ylabel("Mismatch [W]", fontweight="bold")
     ax0.grid(True, linestyle="--", alpha=0.4)
+    ax0.xaxis.set_major_formatter(formatter)
+    ax0.yaxis.set_major_formatter(formatter)
 
     # Optional secondary y-axis for percentages
     lines0 = [ln_w]
@@ -216,10 +235,12 @@ def plot_parametric_2d(k_values, mod2str_values, set_values, str2sys_values,
     # Bottom subplot: str -> sys mismatch vs affected sets/strings
     ax1 = axes[1]
     ln_w2, = ax1.plot(set_values, str2sys_values, marker="o", color="tab:purple", label="Mismatch (strs->sys) [W]")
-    ax1.set_title("Total String -> System Mismatch vs Affected Strings")
-    ax1.set_xlabel("Number of affected strings")
-    ax1.set_ylabel("Mismatch [W]")
+    ax1.set_title("Total String -> System Mismatch vs Affected Strings", fontweight="bold")
+    ax1.set_xlabel("Number of affected strings", fontweight="bold")
+    ax1.set_ylabel("Mismatch [W]", fontweight="bold")
     ax1.grid(True, linestyle="--", alpha=0.4)
+    ax1.xaxis.set_major_formatter(formatter)
+    ax1.yaxis.set_major_formatter(formatter)
 
     # Secondary y-axis for percentages
     lines1 = [ln_w2]
@@ -254,7 +275,7 @@ def plot_parametric_2d(k_values, mod2str_values, set_values, str2sys_values,
     plt.show()
 
 
-def plot_parametric_3d(k_mesh, set_mesh, z_mesh, z_mode="W", title=None, mode=1, z_label=None, z_unit=None):
+def plot_parametric_3d(k_mesh, set_mesh, z_mesh, z_mode="W", title=None, mode=1, z_label=None, z_unit=None, deg_label=None):
     """
     Plot a 3D surface where:
       x-axis: number of degraded modules per string (0..30)
@@ -270,6 +291,7 @@ def plot_parametric_3d(k_mesh, set_mesh, z_mesh, z_mode="W", title=None, mode=1,
       mode: degradation mode (for optional saving)
       z_label: axis label for Z (e.g., "Total System Loss")
       z_unit: unit string for Z (e.g., "W", "%")
+      deg_label: optional degradation label to include in the plot title
     """
     from matplotlib.ticker import EngFormatter
     from mpl_toolkits.mplot3d import Axes3D
@@ -288,12 +310,17 @@ def plot_parametric_3d(k_mesh, set_mesh, z_mesh, z_mode="W", title=None, mode=1,
     ax.zaxis.set_major_formatter(formatter)
 
     surf = ax.plot_surface(k_mesh, set_mesh, z_mesh, cmap="viridis", linewidth=0, antialiased=True, alpha=0.9)
-    ax.set_xlabel("Degraded modules per string")
+    ax.set_xlabel("Degraded modules per string", fontweight="bold")
     y_label = "Affected strings"
-    ax.set_ylabel(y_label)
-    ax.set_zlabel(f"{label} [{unit}]")
+    ax.set_ylabel(y_label, fontweight="bold")
+    ax.set_zlabel(f"{label} [{unit}]", fontweight="bold")
     if title:
-        ax.set_title(title)
+        if deg_label:
+            ax.set_title(f"{title}", fontweight="bold")
+        elif mode is not None:
+            ax.set_title(f"{title} for Mode {mode}", fontweight="bold")
+        else:
+            ax.set_title(title, fontweight="bold")
 
     fig.colorbar(surf, shrink=0.7, aspect=18, pad=0.08, label=unit)
     plt.tight_layout()

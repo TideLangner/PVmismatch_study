@@ -93,18 +93,25 @@ def plot_degraded(Icell_deg=None, Vcell_deg=None, Pcell_deg=None,
         - ax_pv title, axis and limits
         - arguments passed in run_baselines() sys_simulate.py
         """
+    from matplotlib.ticker import EngFormatter
 
     fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(10, 6))
+
+    formatter = EngFormatter()
+    ax_iv.xaxis.set_major_formatter(formatter)
+    ax_iv.yaxis.set_major_formatter(formatter)
+    ax_pv.xaxis.set_major_formatter(formatter)
+    ax_pv.yaxis.set_major_formatter(formatter)
 
     # IV subplot
     # ax_iv.plot(Vcell_deg, Icell_deg, label="Cell",   color="tab:blue")
     ax_iv.plot(Vmod_deg, Imod_deg, label="Module", color="tab:green")
     ax_iv.plot(Vstr_deg, Istr_deg, label="String", color="tab:orange")
     ax_iv.plot(Vsys_deg, Isys_deg, label="System", color="tab:red")
-    ax_iv.set_title(f"I–V Curves for {deg_label} Module, String and System")
-    ax_iv.set_xlabel("Voltage [V]")
+    ax_iv.set_title(f"I–V Curves for {deg_label} Module, String and System", fontweight="bold")
+    ax_iv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_iv.set_xlim(0, 1.1 * np.max(Vsys_deg))
-    ax_iv.set_ylabel("Current [A]")
+    ax_iv.set_ylabel("Current [A]", fontweight="bold")
     ax_iv.set_ylim(0, 1.1 * np.max(Isys_deg))
     ax_iv.grid(True, linestyle="--", alpha=0.4)
     ax_iv.legend()
@@ -114,10 +121,10 @@ def plot_degraded(Icell_deg=None, Vcell_deg=None, Pcell_deg=None,
     ax_pv.plot(Vmod_deg, Pmod_deg, label="Module", color="tab:green")
     ax_pv.plot(Vstr_deg, Pstr_deg, label="String", color="tab:orange")
     ax_pv.plot(Vsys_deg, Psys_deg, label="System", color="tab:red")
-    ax_pv.set_title(f"P–V Curves for {deg_label} Module, String and System")
-    ax_pv.set_xlabel("Voltage [V]")
+    ax_pv.set_title(f"P–V Curves for {deg_label} Module, String and System", fontweight="bold")
+    ax_pv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_pv.set_xlim(0, 1.1 * np.max(Vsys_deg))
-    ax_pv.set_ylabel("Power [W]")
+    ax_pv.set_ylabel("Power [W]", fontweight="bold")
     ax_pv.set_ylim(0, 1.1 * np.max(Psys_deg))
     ax_pv.grid(True, linestyle="--", alpha=0.4)
     ax_pv.legend()
@@ -131,16 +138,23 @@ def plot_deg_vs_healthy_mods(Imod=None, Vmod=None, Pmod=None,
     """
     Plot details for healthy vs degraded modules.
     """
+    from matplotlib.ticker import EngFormatter
 
     fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(10, 6))
+
+    formatter = EngFormatter()
+    ax_iv.xaxis.set_major_formatter(formatter)
+    ax_iv.yaxis.set_major_formatter(formatter)
+    ax_pv.xaxis.set_major_formatter(formatter)
+    ax_pv.yaxis.set_major_formatter(formatter)
 
     # IV subplot
     ax_iv.plot(Vmod, Imod, label="Healthy Module", color="tab:green")
     ax_iv.plot(Vmod_deg, Imod_deg, label="Degraded Module", color="tab:red")
-    ax_iv.set_title(f"I–V Curves for Healthy vs {deg_label} Module")
-    ax_iv.set_xlabel("Voltage [V]")
+    ax_iv.set_title(f"I–V Curves for Healthy vs {deg_label} Module", fontweight="bold")
+    ax_iv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_iv.set_xlim(0, 1.1 * np.max(Vmod))
-    ax_iv.set_ylabel("Current [A]")
+    ax_iv.set_ylabel("Current [A]", fontweight="bold")
     ax_iv.set_ylim(0, 1.1 * np.max(Imod))
     ax_iv.grid(True, linestyle="--", alpha=0.4)
     ax_iv.legend()
@@ -149,10 +163,10 @@ def plot_deg_vs_healthy_mods(Imod=None, Vmod=None, Pmod=None,
     # ax_pv.plot(Vcell_1, Pcell_1, label="Cell",   color="tab:blue")
     ax_pv.plot(Vmod, Pmod, label="Healthy Module", color="tab:green")
     ax_pv.plot(Vmod_deg, Pmod_deg, label="Degraded Module", color="tab:red")
-    ax_pv.set_title(f"P–V Curves for Healthy vs {deg_label} Module")
-    ax_pv.set_xlabel("Voltage [V]")
+    ax_pv.set_title(f"P–V Curves for Healthy vs {deg_label} Module", fontweight="bold")
+    ax_pv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_pv.set_xlim(0, 1.1 * np.max(Vmod))
-    ax_pv.set_ylabel("Power [W]")
+    ax_pv.set_ylabel("Power [W]", fontweight="bold")
     ax_pv.set_ylim(0, 1.1 * np.max(Pmod))
     ax_pv.grid(True, linestyle="--", alpha=0.4)
     ax_pv.legend()
@@ -165,8 +179,15 @@ def plot_degradation_modes(Imod=None, Vmod=None, Pmod=None, all_modes=None):
     """
     Plot module outputs for all degradation modes.
     """
+    from matplotlib.ticker import EngFormatter
 
     fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(10, 6))
+
+    formatter = EngFormatter()
+    ax_iv.xaxis.set_major_formatter(formatter)
+    ax_iv.yaxis.set_major_formatter(formatter)
+    ax_pv.xaxis.set_major_formatter(formatter)
+    ax_pv.yaxis.set_major_formatter(formatter)
 
     # Shades of red for plots
     c = ["#500000", "#700000", "#900000", "#bb0000", "#dd0000", "#ff0000"]
@@ -181,19 +202,19 @@ def plot_degradation_modes(Imod=None, Vmod=None, Pmod=None, all_modes=None):
         ax_pv.plot(s["Vmod_deg"], s["Pmod_deg"], label=s["deg_label"], color=c[i])
 
     # IV subplot
-    ax_iv.set_title("I–V Curves for All Degraded Modules")
-    ax_iv.set_xlabel("Voltage [V]")
+    ax_iv.set_title("I–V Curves for All Degraded Modules", fontweight="bold")
+    ax_iv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_iv.set_xlim(0, 1.1 * np.max(Vmod))
-    ax_iv.set_ylabel("Current [A]")
+    ax_iv.set_ylabel("Current [A]", fontweight="bold")
     ax_iv.set_ylim(0, 1.1 * np.max(Imod))
     ax_iv.grid(True, linestyle="--", alpha=0.4)
     ax_iv.legend()
 
     # PV subplot
-    ax_pv.set_title(f"P–V Curves for All Degraded Modules")
-    ax_pv.set_xlabel("Voltage [V]")
+    ax_pv.set_title(f"P–V Curves for All Degraded Modules", fontweight="bold")
+    ax_pv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_pv.set_xlim(0, 1.1 * np.max(Vmod))
-    ax_pv.set_ylabel("Power [W]")
+    ax_pv.set_ylabel("Power [W]", fontweight="bold")
     ax_pv.set_ylim(0, 1.1 * np.max(Pmod))
     ax_pv.grid(True, linestyle="--", alpha=0.4)
     ax_pv.legend()

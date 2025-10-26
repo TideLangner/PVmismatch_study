@@ -55,31 +55,38 @@ def plot_healthy(Icell=None, Vcell=None, Pcell=None,
     - ax_pv title, axis and limits
     - arguments passed in run_baselines() sys_simulate.py
     """
+    from matplotlib.ticker import EngFormatter
 
     fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(10, 6))
 
+    formatter = EngFormatter()
+    ax_iv.xaxis.set_major_formatter(formatter)
+    ax_iv.yaxis.set_major_formatter(formatter)
+    ax_pv.xaxis.set_major_formatter(formatter)
+    ax_pv.yaxis.set_major_formatter(formatter)
+
     # IV subplot
     # ax_iv.plot(Vcell_deg, Icell_deg, label="Cell",   color="tab:blue")
-    ax_iv.plot(Vmod, Imod, label="Module", color="tab:green")
+    ax_iv.plot(Vmod, Imod, label="Module", color="tab:red")
     ax_iv.plot(Vstr, Istr, label="String", color="tab:orange")
-    ax_iv.plot(Vsys, Isys, label="System", color="tab:red")
-    ax_iv.set_title(f"I–V Curves for Healthy Module, String and System")
-    ax_iv.set_xlabel("Voltage [V]")
+    ax_iv.plot(Vsys, Isys, label="System", color="tab:green")
+    ax_iv.set_title(f"I–V Curves for Healthy Module, String and System", fontweight="bold")
+    ax_iv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_iv.set_xlim(0, 1.1 * np.max(Vsys))
-    ax_iv.set_ylabel("Current [A]")
+    ax_iv.set_ylabel("Current [A]", fontweight="bold")
     ax_iv.set_ylim(0, 1.1 * np.max(Isys))
     ax_iv.grid(True, linestyle="--", alpha=0.4)
     ax_iv.legend()
 
     # PV subplot
     # ax_pv.plot(Vcell_1, Pcell_1, label="Cell",   color="tab:blue")
-    ax_pv.plot(Vmod, Pmod, label="Module", color="tab:green")
+    ax_pv.plot(Vmod, Pmod, label="Module", color="tab:red")
     ax_pv.plot(Vstr, Pstr, label="String", color="tab:orange")
-    ax_pv.plot(Vsys, Psys, label="System", color="tab:red")
-    ax_pv.set_title(f"P–V Curves for Healthy Module, String and System")
-    ax_pv.set_xlabel("Voltage [V]")
+    ax_pv.plot(Vsys, Psys, label="System", color="tab:green")
+    ax_pv.set_title(f"P–V Curves for Healthy Module, String and System", fontweight="bold")
+    ax_pv.set_xlabel("Voltage [V]", fontweight="bold")
     ax_pv.set_xlim(0, 1.1 * np.max(Vsys))
-    ax_pv.set_ylabel("Power [W]")
+    ax_pv.set_ylabel("Power [W]", fontweight="bold")
     ax_pv.set_ylim(0, 1.1 * np.max(Psys))
     ax_pv.grid(True, linestyle="--", alpha=0.4)
     ax_pv.legend()

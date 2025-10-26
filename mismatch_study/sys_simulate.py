@@ -3,6 +3,8 @@
 
 import time
 from datetime import timedelta
+
+from case_study_data.module_specs import degraded_module
 from sys_healthy import create_healthy, plot_healthy
 from sys_degraded_fully import create_degraded, plot_degraded, plot_deg_vs_healthy_mods, plot_degradation_modes
 from sys_mismatched import create_mismatched_pyramid, create_mismatched_parametric, print_system, create_mismatched_multimodal
@@ -56,7 +58,6 @@ def run_baselines():
     """Plot constant baseline systems"""
 
     # Healthy System
-    plot_healthy(Icell=Icell, Vcell=Vcell, Pcell=Pcell)
     plot_healthy(Imod=Imod, Vmod=Vmod, Pmod=Pmod,
                  Istr=Istr, Vstr=Vstr, Pstr=Pstr,
                  Isys=Isys, Vsys=Vsys, Psys=Psys)
@@ -205,7 +206,7 @@ def run_mismatch_parametric_2d(mismatch_vs="total"):
     print(f"\nTotal time: {timedelta(seconds=elapsed)}")
 
 
-def run_mismatch_parametric_3d(resolution=30, metric_key="mismatch_total_W"):
+def run_mismatch_parametric_3d(resolution=30, metric_key="mismatch_total_W", deg_mode=1):
     """Load a saved parametric surface and plot it in 3D.
 
     Parameters:
@@ -216,6 +217,7 @@ def run_mismatch_parametric_3d(resolution=30, metric_key="mismatch_total_W"):
         > "metric_percent_mismatch_to_loss"
         > "metric_total_system_loss"
     - The function will also try with a "metric_" prefix if not provided.
+    - deg_mode: degradation mode
     """
 
     if resolution not in (1, 5, 10, 30):
@@ -227,8 +229,10 @@ def run_mismatch_parametric_3d(resolution=30, metric_key="mismatch_total_W"):
     import time
     from datetime import timedelta
 
+    start = time.time()
+
     # Paths to saved artifacts
-    out_dir = Path("results") / f"mode_{degradation_mode}"
+    out_dir = Path("results") / f"mode_{deg_mode}"
     npz_path = out_dir / f"surface_res{resolution}.npz"
     meta_path = out_dir / f"surface_res{resolution}.metadata.json"
 
@@ -255,11 +259,11 @@ def run_mismatch_parametric_3d(resolution=30, metric_key="mismatch_total_W"):
         if metric_key in data.files:
             selected_key = metric_key
         else:
-            alt = f"metric_{metric_key}" if not metric_key.startswith("metric_") else metric_key[len("metric_") :]
+            alt = f"metric_{metric_key}" if not metric_key.startswith("metric_") else metric_key[len("metric_"):]
             if alt in data.files:
                 selected_key = alt
-            elif metric_key.startswith("metric_") and metric_key[len("metric_") :] in data.files:
-                selected_key = metric_key[len("metric_") :]
+            elif metric_key.startswith("metric_") and metric_key[len("metric_"):] in data.files:
+                selected_key = metric_key[len("metric_"):]
         if selected_key is None:
             available = ", ".join(sorted(data.files))
             raise KeyError(f"Requested surface '{metric_key}' not found in saved data. Available keys: {available}")
@@ -280,10 +284,10 @@ def run_mismatch_parametric_3d(resolution=30, metric_key="mismatch_total_W"):
         return base.replace("_", " ").title()
 
     z_label = format_label(selected_key)
-    title = f"{z_label} Surface [{unit}]"
+    deg_label_loaded = metadata.get("deg_label", f"mode_{deg_mode}")
+    title = f"{z_label} Surface [{unit}] — {deg_label_loaded}"
 
     # Report basic info from metadata to confirm load
-    deg_label_loaded = metadata.get("deg_label", f"mode_{degradation_mode}")
     num_rows = metadata.get("num_rows")
     num_cols = metadata.get("num_cols")
     print(f"Loaded surface '{selected_key}' for {deg_label_loaded} at resolution={metadata.get('resolution')}, "
@@ -295,7 +299,8 @@ def run_mismatch_parametric_3d(resolution=30, metric_key="mismatch_total_W"):
     print(f"\nLoad+plot prep time: {timedelta(seconds=elapsed)}")
 
     # Plot 3D surface (generic)
-    plot_parametric_3d(K, N, Z, z_mode=None, title=title, mode=degradation_mode, z_label=z_label, z_unit=unit)
+    plot_parametric_3d(K, N, Z, z_mode=None, title=title, mode=deg_mode, z_label=z_label, z_unit=unit,
+                       deg_label=deg_label_loaded)
 
 
 def save_parametric_results(resolution=30, mode_id=None):
@@ -584,10 +589,6 @@ def save_multimodal_results(resolution=30, levels=(1, 2, 3, 4, 5, 6), mode_id=99
         modules_degraded_levels=modules_degraded_levels,
     )
 
-    # Optionally, immediately plot selected metrics for this scenario
-    # run_batch_plot_metrics(resolution=resolution, modes=[mode_id], view='ortho')
-    # run_batch_plot_metrics(resolution=resolution, modes=[mode_id], view='top')
-
 
 def save_multimodal_surfaces(*, mode_id=999, resolution=1, view=None,
                              out_root="results_plotted/multimodal",
@@ -614,7 +615,7 @@ def save_multimodal_surfaces(*, mode_id=999, resolution=1, view=None,
         ("metric_percent_mismatch_to_loss",   "plasma"),
     ]
 
-    def fromat_label(key: str) -> str:
+    def format_label(key: str) -> str:
         base = key[7:] if key.startswith("metric_") else key
         return base.replace("_", " ").title()
 
@@ -672,12 +673,12 @@ def save_multimodal_surfaces(*, mode_id=999, resolution=1, view=None,
             units_map = metadata.get("units", {})
             unit = units_map.get(selected_key) or ("%" if "percent" in selected_key.lower() else "W")
 
-            z_label = fromat_label(selected_key)
+            z_label = format_label(selected_key)
             title = f"{z_label} Surface [{unit}] — {metadata.get('deg_label', f'Mode {mode_id}')}"
 
             # Choose output filename (top-down view or ortho)
-            plot_name = f"{selected_key}_res{resolution}_top.pdf" if view == "top" \
-                        else f"{selected_key}_res{resolution}.pdf"
+            plot_name = f"{selected_key}_res{resolution}_top.svg" if view == "top" \
+                        else f"{selected_key}_res{resolution}.svg"
             plot_path = mode_plot_dir / plot_name
             if not overwrite:
                 plot_path = unique_path(plot_path)
@@ -712,11 +713,16 @@ def save_multimodal_surfaces(*, mode_id=999, resolution=1, view=None,
 # ----- RUN -----
 # run_baselines()
 # run_mismatch_pyramid(degraded_sets=3, min_degraded_modules=1, max_degraded_modules=15, clamp_after_max=True)
-# run_mismatch_parametric_2d(mismatch_vs="total")
-# run_mismatch_parametric_3d(resolution=1, metric_key="metric_percent_mismatch_to_loss")
-# save_parametric_results(resolution=1, mode_id=1)
-# save_parametric_surfaces(resolution=1, view='ortho')
-# save_parametric_surfaces(resolution=1, view='top')
-# save_trend_surfaces(resolution=1, modes=range(1, 7), show=False)
-# save_multimodal_results(resolution=1, levels=(1, 2, 3, 4, 5, 6), mode_id=999)
-# save_multimodal_surfaces(mode_id=999, resolution=1, view='ortho')
+# run_mismatch_parametric_2d(mismatch_vs="total") # Note: long run time (~3min)
+
+# save_parametric_results(resolution=1, mode_id=1) # Data already stored - not necessary to run
+# run_mismatch_parametric_3d(resolution=1, metric_key="metric_percent_mismatch_to_loss", deg_mode=1)
+# run_mismatch_parametric_3d(resolution=1, metric_key="metric_mismatch_total", deg_mode=5)
+# save_parametric_surfaces(resolution=1, view='ortho') # Plots already stored - not necessary to run
+# save_parametric_surfaces(resolution=1, view='top') # Plots already stored - not necessary to run
+
+# save_trend_surfaces(resolution=1, modes=range(1, 7), show=False) # Plots already stored - not necessary to run
+
+# save_multimodal_results(resolution=1, levels=(1, 2, 3, 4, 5, 6), mode_id=999) # Data already stored - not necessary to run
+# save_multimodal_surfaces(mode_id=999, resolution=1, view='ortho') # Plots already stored - not necessary to run
+# save_multimodal_surfaces(mode_id=999, resolution=1, view='top') # Plots already stored - not necessary to run
