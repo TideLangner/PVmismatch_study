@@ -1,3 +1,4 @@
+# Tide Langner
 # Fully degraded system
 
 import numpy as np
@@ -11,7 +12,7 @@ Isc0_T0=8.69, alpha_Isc=0.00060,
 Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5
 """
 
-# ======== SET DEGRADATION MODE: ======== #
+# ========== DEGRADATION MODES ========== #
 """
 # 1 = 90.0% healthy -> Rs*1.965 ; Rsh/1.965
 # 2 = 80.0% healthy -> Rs*2.980 ; Rsh/2.980
@@ -20,8 +21,6 @@ Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5
 # 5 = 50.0% healthy -> Rs*6.815 ; Rsh/6.815
 # 6 = 40.0% healthy -> Rs*8.970 ; Rsh/8.970
 """
-# ======================================= #
-# degradation_mode = 1
 # ======================================= #
 
 
@@ -52,17 +51,22 @@ def create_degraded(degradation_mode=1):
                                       Isc0_T0=8.69, alpha_Isc=0.00060, Isat1_T0=1.79556E-10, Isat2_T0=1.2696E-5)
         deg_label = "60% Degraded"
 
+    # Degraded Cell
     Icell_deg, Vcell_deg, Pcell_deg = cell_degraded.Icell, cell_degraded.Vcell, cell_degraded.Pcell
 
+    # Degraded Module (72 cells)
     module_degraded = pvmodule.PVmodule(cell_pos=pvmodule.STD72, pvcells=[cell_degraded] * 72)
     Imod_deg, Vmod_deg, Pmod_deg = module_degraded.Imod, module_degraded.Vmod, module_degraded.Pmod
 
+    # Degraded string (30 mods)
     string_degraded = pvstring.PVstring(pvmods=module_degraded, numberMods=30)
     Istr_deg, Vstr_deg, Pstr_deg = string_degraded.Istring, string_degraded.Vstring, string_degraded.Pstring
 
+    # Degraded System (150 strs)
     system_degraded = pvsystem.PVsystem(pvstrs=string_degraded, numberStrs=150)
     Isys_deg, Vsys_deg, Psys_deg = system_degraded.Isys, system_degraded.Vsys, system_degraded.Psys
 
+    # Dictionary of degraded components
     degraded = {
         "cell_degraded": cell_degraded,
         "Icell_deg": Icell_deg, "Vcell_deg": Vcell_deg, "Pcell_deg": Pcell_deg,

@@ -1,7 +1,6 @@
 # Tide Langner
 # 25 August 2025
 # Mismatch Loss Calculator
-from functools import total_ordering
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -117,7 +116,7 @@ def mismatch_report(pvsys, pvsys_healthy=None):
 
 def plot_mismatch_report(report, show_values=True):
     """
-    Condensed visualization that aligns with the requested layout:
+    Plot mismatch report in stacked bar chart
 
       1) "healthy system output": single bar (system healthy Pmp).
       2) "degradation-only output": one stacked bar:
@@ -139,16 +138,14 @@ def plot_mismatch_report(report, show_values=True):
     """
 
     # Healthy references (equal at module/string/system levels in this report's formulation)
-    total_mod_healthy = report.get("total_module_power_healthy")
-    total_str_healthy = report.get("total_string_power_healthy")
     total_sys_healthy = report.get("total_system_power_healthy")
     H = total_sys_healthy if total_sys_healthy is not None else 0.0
 
-    # Degradation-only (equal across levels; take system level)
+    # Degradation-only (equal across levels so use system level)
     deg_loss = report.get("degradation_total") or 0.0
     deg_only_output = max(H - deg_loss, 0.0)
 
-    # Actuals and mismatch components
+    # Actual outputs and mismatch components
     total_str_actual = report.get("total_string_power_degraded") or 0.0
     total_sys_actual = report.get("total_system_power_degraded") or 0.0
     mismatch_mod_to_str = report.get("mismatch_modules_to_strings") or 0.0
@@ -241,7 +238,7 @@ def plot_mismatch_report(report, show_values=True):
             ax.text(x[-1] + 0.55, ymax * 0.95, f"Total Mismatch: {mismatch_total:.0f} W ({pct_mm_total:.1f}%)",
                     ha="left", va="top", fontsize=9, color="dimgray")
 
-    # Legend (deduplicate)
+    # Legend
     handles, labels_ = ax.get_legend_handles_labels()
     uniq = dict(zip(labels_, handles))
     ax.legend(uniq.values(), uniq.keys(), loc="best")

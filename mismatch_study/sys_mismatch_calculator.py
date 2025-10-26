@@ -1,12 +1,14 @@
+# Tide Langner
 # Calculate mismatch components
 
 import numpy as np
-# from sys_mismatched import *
 
+# --- MPP from sampled I-V-P arrays
 def mpp_from_curve(I, V, P):
     """Return (Pmp, Imp, Vmp) from sampled I-V-P arrays"""
     k = np.argmax(P)
     return float(P[k]), float(I[k]), float(V[k])
+
 
 # --- Cached MPP helpers (avoid recomputing argmax on immutable curves) ---
 def _mpp_cached(obj, I_attr: str, V_attr: str, P_attr: str, cache_attr: str):
@@ -46,6 +48,7 @@ def system_mpp(pvsys):
     return _mpp_cached(pvsys, "Isys", "Vsys", "Psys", "_Pmp_sys")
 
 
+# --- Loss calculator ---
 def loss_calculator(pvsys, pvsys_healthy=None, num_strs_affected=150):
     """
     Calculates:

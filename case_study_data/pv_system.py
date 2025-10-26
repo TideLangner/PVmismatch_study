@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
 from pvmismatch import pvsystem, pvstring
-from alternate_data.module_specs import std_module, degraded_module, Rsh_degraded_module, Rs_degraded_module
+from case_study_data.module_specs import std_module, degraded_module, Rsh_degraded_module, Rs_degraded_module
 
 # This function may not be necessary, as one could just use pvsystem.PVsystem() directly.
 def create_std_system(num_strings=2, num_modules=30):
@@ -65,8 +65,9 @@ def plot_pv_system(system, title='std'):
     """
     Plot PV system modules as a 2D image (imshow style), where shading corresponds to module Pmp values.
 
-    Parameters: system (PVsystem),
-                title ('std' or 'Rsh' or 'Rs' or 'degraded')
+    Parameters:
+    - system (PVsystem),
+    - title ('std' or 'Rsh' or 'Rs' or 'degraded')
     """
     num_strings = len(system.pvstrs)
     num_modules = len(system.pvstrs[0].pvmods)

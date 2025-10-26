@@ -3,7 +3,7 @@
 # Jinko JKM 290PP 72 module parameters - 6 columns x 12 rows
 
 from pvmismatch import pvcell, pvmodule
-from alternate_data.find_curves import find_Rsh_curve, find_Rs_curve
+from case_study_data.find_curves import find_Rsh_curve, find_Rs_curve
 
 # Jinko JKM290PP-72 module with standard parameters from CEC module database
 def std_module():

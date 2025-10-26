@@ -49,8 +49,3 @@ def remove_modules(system, n_missing=1, strings_with_missing=1, show_map=False):
 
     return pvsys_rmvd, layout_map
 
-
-# TODO: add degradation model
-# TODO: add irradiance model
-# TODO: add temperature model
-# TODO: add combination model

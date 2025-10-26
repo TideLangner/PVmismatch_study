@@ -1,9 +1,8 @@
 # Tide Langner
 # 25 August 2025
-# Find Rsh and Rs curves from alternate_data in study:
+# Find Rsh and Rs curves from case_study_data in study:
 # Viability of performance improvement of degraded Photovoltaic plants through reconfiguration of PV modules
-# By authors:
-# Ruchita Korgaonkar and Narendra Shiradkar
+# By authors: Ruchita Korgaonkar and Narendra Shiradkar
 
 import pandas as pd
 import numpy as np
@@ -15,7 +14,7 @@ x = np.arange(0, num_modules)
 
 def find_Rsh_curve():
     """function of dataset found initially via MS Excel as y = 2429.2x^(-1.535)
-    function refined via manual adjustment to best fit of y = 285.79x^(-2.085) for custom cell alternate_data extrapolation"""
+    function adjusted to best fit of y = 285.79x^(-1.535) for custom cell case_study_data extrapolation"""
     k = -1.535          # exponent value
     start_val = 258.79  # Rsh of standard cell
     n = num_modules     # number of points to fit
@@ -27,7 +26,8 @@ def find_Rsh_curve():
 
 def find_Rs_curve():
     """function of dataset found initially via MS Excel as y = 1.5716x^(-0.254)
-    function refined via manual adjustment to best fit of y = 0.00641575x^(0.254) for custom cell alternate_data extrapolation"""
+    function refined via manual adjustment to best fit of y = 0.00641575x^(-0.254)
+    for custom cell case_study_data extrapolation"""
     k = 0.254                 # exponent value
     start_val = 0.00641575    # Rs of standard cell
     n = num_modules           # number of points to fit

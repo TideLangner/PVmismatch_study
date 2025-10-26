@@ -1,3 +1,4 @@
+# Tide Langner
 # Tool for defining a system from an Excel file
 
 import numpy as np
@@ -29,7 +30,6 @@ HEALTHY_PARAMS = dict(
 )
 
 # Degradation multipliers for levels 1-6
-# Matches the factors used for 10%, 20%, 30% degradation etc.
 DEG_LEVELS = {
     1: (1.965, 1.965),  # Rs*1.965 ; Rsh/1.965
     2: (2.980, 2.980),  # Rs*2.980 ; Rsh/2.980
@@ -58,7 +58,7 @@ def _parse_str_index(string_name: str) -> int:
     return int(m.group(1))
 
 def _make_cell(rs: float, rsh: float) -> pvcell.PVcell:
-    """Create a PVcell with healthy parameters except overridden Rs/Rsh."""
+    """Create a PVcell with Rs/Rsh parameters."""
     return pvcell.PVcell(Rs=rs, Rsh=rsh,
                          Isc0_T0=HEALTHY_PARAMS["Isc0_T0"], alpha_Isc=HEALTHY_PARAMS["alpha_Isc"],
                          Isat1_T0=HEALTHY_PARAMS["Isat1_T0"], Isat2_T0=HEALTHY_PARAMS["Isat2_T0"])
@@ -120,23 +120,18 @@ def _read_inverter_rows(path: str, sheet: str, inv_code: str) -> pd.DataFrame:
     Expected columns (at least): Inverter, StringName, L0_healthy, L1..L6, TotalMods.
     Missing L-levels default to 0; missing TotalMods defaults to num_modules_per_str.
     """
-    df = pd.read_excel(
-        path,
-        sheet_name=sheet,
-        usecols="A:G",
-        skiprows=1,
-        engine="openpyxl",
-    )
+    df = pd.read_excel(path, sheet_name=sheet, usecols="A:G", skiprows=1, engine="openpyxl")
     return df.loc[df["Inverter"].astype(str) == inv_code].copy()
 
-def _build_inverter_strings(df: pd.DataFrame, protos: Dict[str, pvmodule.PVmodule]) -> Tuple[List[pvstring.PVstring], Dict[int, Dict[str, int]]]:
+def _build_inverter_strings(df: pd.DataFrame, protos: Dict[str, pvmodule.PVmodule]) \
+        -> Tuple[List[pvstring.PVstring], Dict[int, Dict[str, int]]]:
     """
     Build 28 PVstrings for an inverter, mapping any missing string to healthy.
     Returns:
       - list of PVstring objects
       - metadata dict per string index with counts used
     """
-    # Initialize all 28 strings as healthy
+    # Initialise all 28 strings as healthy
     base_counts = {"H": num_modules_per_str}
     base_counts.update({f"L{i}": 0 for i in range(1, 7)})
 
@@ -230,7 +225,7 @@ def plot_system_iv_pv(sys: pvsystem.PVsystem, title: str = "System", save_path: 
 
     fig, (ax_iv, ax_pv) = plt.subplots(1, 2, figsize=(11, 5))
 
-    # IV
+    # --- I-V Curve ---
     ax_iv.plot(Vsys, Isys, label=title, color="tab:blue", linewidth=1.8)
     ax_iv.scatter([Vmp], [Imp], color="tab:purple", s=30, zorder=3, label="MPP")
     ax_iv.annotate(f"MPP\nI={Imp:.2f} A\nV={Vmp:.1f} V", xy=(Vmp, Imp),
@@ -245,7 +240,7 @@ def plot_system_iv_pv(sys: pvsystem.PVsystem, title: str = "System", save_path: 
     ax_iv.grid(True, linestyle="--", alpha=0.4)
     ax_iv.legend(loc="best")
 
-    # PV
+    # --- P-V Curve ---
     ax_pv.plot(Vsys, Psys, label=title, color="tab:red", linewidth=1.8)
     ax_pv.scatter([Vmp], [Pmp], color="tab:purple", s=30, zorder=3, label="MPP")
     ax_pv.annotate(f"Pmp={Pmp:.0f} W\nVmp={Vmp:.1f} V", xy=(Vmp, Pmp),

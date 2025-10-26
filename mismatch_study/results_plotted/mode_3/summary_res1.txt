@@ -1,7 +1,7 @@
-Mode 3 - 30% Degraded (resolution=1)
+Mode 3 - Degradation Mode 3 (resolution=1)
 
-- metric_system_MPP_degraded: saved -> metric_system_MPP_degraded_res1.png | unit=W | min=884168.688, mean=1148492.000, max=1264054.125 @ (K=0, N=0)
-- metric_total_system_loss: saved -> metric_total_system_loss_res1.png | unit=W | min=2.817, mean=115564.828, max=379888.250 @ (K=30, N=150)
-- metric_mismatch_total: saved -> metric_mismatch_total_res1.png | unit=W | min=-0.001, mean=20790.596, max=61871.691 @ (K=30, N=76)
-- metric_percent_mismatch_total: saved -> metric_percent_mismatch_total_res1.png | unit=% | min=-0.000, mean=1.645, max=4.895 @ (K=30, N=76)
-- metric_percent_mismatch_to_loss: saved -> metric_percent_mismatch_to_loss_res1.png | unit=% | min=-0.032, mean=19.961, max=38.203 @ (K=18, N=1)
+- metric_system_MPP_degraded: saved -> metric_system_MPP_degraded_res1_top.pdf | unit=W | min=884168.688, mean=1148492.000, max=1264054.125 @ (K=0, N=0)
+- metric_total_system_loss: saved -> metric_total_system_loss_res1_top.pdf | unit=W | min=2.817, mean=115564.828, max=379888.250 @ (K=30, N=150)
+- metric_mismatch_total: saved -> metric_mismatch_total_res1_top.pdf | unit=W | min=-0.001, mean=20790.596, max=61871.691 @ (K=30, N=76)
+- metric_percent_mismatch_total: saved -> metric_percent_mismatch_total_res1_top.pdf | unit=% | min=-0.000, mean=1.645, max=4.895 @ (K=30, N=76)
+- metric_percent_mismatch_to_loss: saved -> metric_percent_mismatch_to_loss_res1_top.pdf | unit=% | min=-0.032, mean=19.961, max=38.203 @ (K=18, N=1)
